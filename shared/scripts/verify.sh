@@ -4,7 +4,7 @@
 echo "🔍 验证 AI Skills 配置..."
 echo ""
 
-SKILLS_DIR="$HOME/AI-Skills"
+SKILLS_DIR="$HOME/Workspace/my-ai-skills"
 
 # 检查中央仓库
 if [ -d "$SKILLS_DIR" ]; then

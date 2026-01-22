@@ -42,8 +42,37 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## 执行步骤
 
+### 0. 项目特定检查（预处理）
+
+**在开始提交流程前，先检查是否是特定类型的项目，需要执行额外的代码检查：**
+
+#### Obsidian 插件项目检查
+
+检查当前项目是否是 Obsidian 插件：
+```bash
+# 检查是否存在 manifest.json
+test -f manifest.json && echo "obsidian-plugin" || echo "not-obsidian"
+```
+
+**如果是 Obsidian 插件项目，必须先运行代码检查：**
+
+```bash
+# 运行 Obsidian 检查脚本
+bash ~/.claude/skills/obsidian-pre-commit-check/scripts/obsidian-check.sh
+```
+
+**检查结果处理：**
+- **退出码 0**：检查通过，继续提交流程
+- **退出码 1**：检查失败，**停止提交**，提示用户先修复问题
+- **退出码 其他**：脚本出错，询问用户是否继续
+
+**重要**：
+- 如果 Obsidian 检查失败，**不要继续执行后续步骤**
+- 向用户说明发现的问题，建议修复后再提交
+- 用户修复问题并重新 `git add` 后，可以再次触发提交
+
 ### 1. 查看变更
-首先并行运行以下命令了解代码变更：
+并行运行以下命令了解代码变更：
 - `git status` - 查看所有未跟踪和已修改文件
 - `git diff --staged` - 查看暂存区的具体变更
 - `git log --oneline -5` - 查看最近的提交记录，学习项目的提交风格
@@ -150,5 +179,41 @@ exit 0
 在 frontmatter 中取消注释以启用：
 ```yaml
 allowed-tools: Read, Grep, Bash  # 限制只能使用这些工具
+```
+
+---
+
+## 🔌 集成的 Skills
+
+### Obsidian 插件代码检查
+
+本 Skill 已集成 `obsidian-pre-commit-check`，在提交 Obsidian 插件代码时自动执行检查。
+
+**工作流程**：
+1. 用户说："帮我提交代码"
+2. 自动检测是否是 Obsidian 插件项目（检查 `manifest.json`）
+3. **如果是 Obsidian 插件**：
+   - 自动运行 `obsidian-pre-commit-check` 脚本
+   - 检查代码是否符合 Obsidian 插件规范
+   - **检查失败**：停止提交，提示用户修复问题
+   - **检查通过**：继续正常的提交流程
+4. **如果不是 Obsidian 插件**：直接执行正常提交流程
+
+**检查项目**（自动执行）：
+- ❌ 禁止直接创建 style 元素
+- ❌ 禁止使用 innerHTML/outerHTML
+- ❌ 禁止导入 Node.js 模块（fs, path 等）
+- ❌ 正则表达式控制字符
+- ⚠️ 未使用的变量（ESLint）
+
+**用户体验**：
+- 透明无感：非 Obsidian 项目不受影响
+- 快速反馈：检查在几秒内完成
+- 清晰提示：发现问题时给出具体修复建议
+
+**覆盖检查**（用户强制跳过）：
+如果用户明确要求跳过 Obsidian 检查，可以通过环境变量：
+```bash
+SKIP_OBSIDIAN_CHECK=1 # 然后说"帮我提交代码"
 ```
 

@@ -42,33 +42,29 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## 执行步骤
 
-### 0. 项目特定检查（预处理）
+### 0. 代码质量检查（预处理）
 
-**在开始提交流程前，先检查是否是特定类型的项目，需要执行额外的代码检查：**
-
-#### Obsidian 插件项目检查
-
-检查当前项目是否是 Obsidian 插件：
-```bash
-# 检查是否存在 manifest.json
-test -f manifest.json && echo "obsidian-plugin" || echo "not-obsidian"
-```
-
-**如果是 Obsidian 插件项目，必须先运行代码检查：**
+**在开始提交流程前，自动执行代码质量检查：**
 
 ```bash
-# 运行 Obsidian 检查脚本
-bash ~/.claude/skills/obsidian-pre-commit-check/scripts/obsidian-check.sh
+# 运行通用代码质量检查脚本（会自动识别项目类型）
+bash ~/.claude/skills/code-quality-check/scripts/check.sh
 ```
+
+**检查逻辑：**
+- 脚本会**自动检测项目类型**（Obsidian、React、Vue、Electron 等）
+- 根据项目类型应用对应的检查规则：
+  - **通用规则**：所有项目都执行（硬编码敏感信息、正则控制字符等）
+  - **前端规则**：前端项目执行（innerHTML、console.log 等）
+  - **平台特定规则**：特定平台执行（Obsidian 的 style 元素、Node.js 模块等）
 
 **检查结果处理：**
 - **退出码 0**：检查通过，继续提交流程
 - **退出码 1**：检查失败，**停止提交**，提示用户先修复问题
-- **退出码 其他**：脚本出错，询问用户是否继续
 
 **重要**：
-- 如果 Obsidian 检查失败，**不要继续执行后续步骤**
-- 向用户说明发现的问题，建议修复后再提交
+- 如果代码检查失败，**不要继续执行后续步骤**
+- 向用户说明发现的具体问题和修复建议
 - 用户修复问题并重新 `git add` 后，可以再次触发提交
 
 ### 1. 查看变更
@@ -185,35 +181,42 @@ allowed-tools: Read, Grep, Bash  # 限制只能使用这些工具
 
 ## 🔌 集成的 Skills
 
-### Obsidian 插件代码检查
+### 通用代码质量检查
 
-本 Skill 已集成 `obsidian-pre-commit-check`，在提交 Obsidian 插件代码时自动执行检查。
+本 Skill 已集成 `code-quality-check`，在提交代码前自动执行质量检查。
 
 **工作流程**：
 1. 用户说："帮我提交代码"
-2. 自动检测是否是 Obsidian 插件项目（检查 `manifest.json`）
-3. **如果是 Obsidian 插件**：
-   - 自动运行 `obsidian-pre-commit-check` 脚本
-   - 检查代码是否符合 Obsidian 插件规范
-   - **检查失败**：停止提交，提示用户修复问题
-   - **检查通过**：继续正常的提交流程
-4. **如果不是 Obsidian 插件**：直接执行正常提交流程
+2. 自动检测项目类型（Obsidian、React、Vue、Electron 等）
+3. 根据项目类型执行对应的检查规则
+4. **检查失败**：停止提交，显示问题和修复建议
+5. **检查通过**：继续正常的提交流程
 
-**检查项目**（自动执行）：
-- ❌ 禁止直接创建 style 元素
-- ❌ 禁止使用 innerHTML/outerHTML
-- ❌ 禁止导入 Node.js 模块（fs, path 等）
-- ❌ 正则表达式控制字符
-- ⚠️ 未使用的变量（ESLint）
+**支持的项目类型**：
+- **Obsidian 插件**：通用规则 + 前端规则 + Obsidian 特定规则
+- **浏览器扩展**：通用规则 + 前端规则 + 浏览器扩展规则
+- **Electron 应用**：通用规则 + 前端规则
+- **React/Vue/Angular**：通用规则 + 前端规则
+- **通用项目**：仅通用规则
+
+**检查规则示例**：
+- ✅ **通用规则**（所有项目）：
+  - 硬编码的敏感信息（API key、password）
+  - 正则表达式控制字符
+  - 未使用的变量（ESLint）
+
+- ✅ **前端规则**（前端项目）：
+  - innerHTML/outerHTML 使用（XSS 风险）
+  - dangerouslySetInnerHTML 使用（React）
+  - console.log 残留
+
+- ✅ **Obsidian 规则**（Obsidian 插件）：
+  - 禁止直接创建 style 元素
+  - 禁止导入 Node.js 模块（fs, path）
 
 **用户体验**：
-- 透明无感：非 Obsidian 项目不受影响
-- 快速反馈：检查在几秒内完成
-- 清晰提示：发现问题时给出具体修复建议
-
-**覆盖检查**（用户强制跳过）：
-如果用户明确要求跳过 Obsidian 检查，可以通过环境变量：
-```bash
-SKIP_OBSIDIAN_CHECK=1 # 然后说"帮我提交代码"
-```
+- 🎯 智能识别：自动检测项目类型，无需手动配置
+- ⚡ 快速反馈：检查在几秒内完成
+- 💡 清晰提示：发现问题时给出具体修复建议
+- 🔧 模块化设计：易于扩展新的平台规则
 

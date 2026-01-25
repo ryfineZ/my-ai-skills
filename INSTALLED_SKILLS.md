@@ -2,7 +2,7 @@
 
 > 本文档由 `shared/scripts/update-skills-list.sh` 自动生成和维护
 > 文件名：`INSTALLED_SKILLS.md` - 避免与各 skill 目录中的 `SKILL.md` 混淆
-> 最后更新：2026-01-25 17:17:52
+> 最后更新：2026-01-25 17:47:58
 
 ---
 
@@ -12,6 +12,13 @@
 **用途：** Install and manage skills using npx add-skill. Use when users want to (1) install a specific skill, (2) install from custom GitHub repos, (3) update existing skills, or (4) browse available skills from vercel-labs/agent-skills or other repos for installation. 当用户说"安装 skill"、"更新 skill"、"从 XX 安装 skill"时触发。
 
 **位置：** `~/Workspace/my-ai-skills/add-skill/`
+
+---
+
+### agent-browser
+**用途：** Automates browser interactions for web testing, form filling, screenshots, and data extraction. Use when the user needs to navigate websites, interact with web pages, fill forms, take screenshots, test web applications, or extract information from web pages.
+
+**位置：** `~/Workspace/my-ai-skills/agent-browser/`
 
 ---
 
@@ -72,8 +79,8 @@
 
 ## 📊 统计信息
 
-- **总计：** 8 个 skills
-- **自己创建：** 6 个
+- **总计：** 9 个 skills
+- **自己创建：** 7 个
 - **社区安装：** 2 个
 
 ---

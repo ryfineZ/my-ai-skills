@@ -2,36 +2,37 @@
 
 统一管理所有 AI 编码工具的 Skills（基于 Agent Skills 标准）。
 
-**兼容 [add-skill](https://github.com/vercel-labs/add-skill) 工具** - 可安装社区 skills 并自动同步。
+**兼容 npx skills add** - 可安装社区 skills 并自动同步。
 
 ## 架构设计
 
-本仓库采用中央仓库 + add-skill 集成的方式：
+本仓库采用反向软链接 + skills add 集成的方式：
 
 ```
-中央仓库: ~/Workspace/my-ai-skills/
+Git 仓库: ~/.agents/skills/ (真实目录)
          ↑
-         │ (软链接)
+         │ (反向软链接，方便访问)
          │
-~/.agents/skills/ → add-skill 默认位置
+~/Workspace/my-ai-skills → ~/.agents/skills
+         ↑
+         │ (skills add 自动为各 agent 建立软链接)
          │
-         │ (add-skill 自动创建软链接)
-         ↓
-~/.claude/skills/skill-name → ~/.agents/skills/skill-name
-~/.codex/skills/skill-name → ~/.agents/skills/skill-name
-~/.cursor/skills/skill-name → ~/.agents/skills/skill-name
+~/.claude/skills/skill-name → ../../.agents/skills/skill-name
+~/.codex/skills/skill-name → ../../.agents/skills/skill-name
+~/.cursor/skills/skill-name → ../../.agents/skills/skill-name
 ...等所有支持的 agents
 ```
 
 **优势：**
-- ✅ 所有 skills 统一存储在 `~/Workspace/my-ai-skills`（Git 管理）
-- ✅ 使用 add-skill 安装社区 skills，自动进入中央仓库
+- ✅ Git 仓库在 `~/.agents/skills`（真实目录，版本控制）
+- ✅ `~/Workspace/my-ai-skills` 反向软链接，方便访问和编辑
+- ✅ skills add 自动为所有平台创建软链接
 - ✅ Git 跨设备同步
 - ✅ 兼容 25+ 种 coding agents
 
 ## 支持的工具
 
-通过 add-skill 自动支持：
+通过 skills add 自动支持：
 - ✅ Claude Code、Codex、Cursor
 - ✅ Gemini CLI、Antigravity
 - ✅ Windsurf、Cline、Goose
@@ -53,14 +54,14 @@ bash ~/Workspace/my-ai-skills/setup-universal-skills.sh
 ### 安装社区 Skills
 
 ```bash
-# 使用 add-skill 安装（自动进入中央仓库）
-npx add-skill vercel-labs/agent-skills -g
+# 使用 skills add 安装
+npx skills add vercel-labs/agent-skills -g
 
 # 安装特定 skill
-npx add-skill vercel-labs/agent-skills --skill frontend-design -g
+npx skills add vercel-labs/agent-skills --skill frontend-design -g
 
 # 列出可用的社区 skills
-npx add-skill vercel-labs/agent-skills --list
+npx skills add vercel-labs/agent-skills --list
 ```
 
 ### 创建自己的 Skill
@@ -94,7 +95,7 @@ git push
 
 ```bash
 # 安装社区 skills
-npx add-skill vercel-labs/agent-skills -g
+npx skills add vercel-labs/agent-skills -g
 
 # 创建自己的 skill
 cd ~/Workspace/my-ai-skills
@@ -145,10 +146,10 @@ bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
 ├── .git/                           # Git 仓库
 ├── commit-conventional/            # 你的 skills
 ├── code-quality-check/
-├── skill-creator/
-├── add-skill/                      # 新增：add-skill 管理工具
-├── vercel-react-best-practices/    # add-skill 安装的
-├── web-design-guidelines/          # add-skill 安装的
+├── create-skill/                   # 创建 skill 的指南工具
+├── install-skill/                  # 安装 skill 的管理工具
+├── vercel-react-best-practices/    # skills add 安装的
+├── web-design-guidelines/          # skills add 安装的
 ├── shared/
 │   └── scripts/
 │       ├── install.sh              # 新设备安装脚本
@@ -164,9 +165,12 @@ bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
 ### 软链接架构
 
 ```
-~/.agents/skills -> ~/Workspace/my-ai-skills (中央仓库)
-~/.claude/skills/skill-name -> ~/.agents/skills/skill-name
-~/.cursor/skills/skill-name -> ~/.agents/skills/skill-name
+~/.agents/skills/                   (真实目录，Git 仓库)
+         ↑
+~/Workspace/my-ai-skills -> ~/.agents/skills (反向软链接)
+         ↑
+~/.claude/skills/skill-name -> ../../.agents/skills/skill-name
+~/.cursor/skills/skill-name -> ../../.agents/skills/skill-name
 ...
 ```
 
@@ -174,34 +178,36 @@ bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
 
 本仓库包含两个辅助工具来管理 skills：
 
-### add-skill
-用于通过 `npx add-skill` 安装和管理社区 skills。
+### install-skill
+用于通过 `npx skills add` 安装和管理社区 skills。
 
 **触发方式：** 对话中说"安装 XXX skill"
 
 **功能：**
 - 从 vercel-labs/agent-skills 等仓库安装 skills
+- 支持全局安装（`-g`）和项目级安装
 - 自动更新 INSTALLED_SKILLS.md
 - 提醒提交到 Git
 
-### skill-creator
+### create-skill
 用于创建新的自定义 skills。
 
 **触发方式：** 对话中说"创建新 skill"
 
 **功能：**
 - 提供 skill 创建指导
+- 支持全局创建（`-g`）和项目级创建
 - 遵循最佳实践
 - 自动更新 skills 列表
 
 ## FAQ
 
-**Q: add-skill 和手动创建的区别？**
-- add-skill：从社区安装，自动管理软链接
-- 手动创建：你自己的 skills，直接在中央仓库创建
+**Q: install-skill 和手动创建的区别？**
+- install-skill：使用 npx skills add 从社区安装，自动管理软链接
+- 手动创建：你自己的 skills，直接在 ~/.agents/skills 或项目目录创建
 
 **Q: 会不会安装多份？**
-- 不会！所有 skills 都在 `~/Workspace/my-ai-skills`，只有一份
+- 不会！所有 skills 都在 `~/.agents/skills`（真实目录），`~/Workspace/my-ai-skills` 只是软链接
 
 **Q: 如何查看已安装的 skills？**
 ```bash
@@ -214,7 +220,7 @@ cat ~/Workspace/my-ai-skills/INSTALLED_SKILLS.md
 
 **Q: 如何更新社区 skills？**
 ```bash
-npx add-skill vercel-labs/agent-skills --skill skill-name -g
+npx skills add vercel-labs/agent-skills --skill skill-name -g
 bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
 ```
 

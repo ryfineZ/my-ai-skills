@@ -111,16 +111,38 @@ except Exception as e:
         name="$dir_name"
     fi
 
-    # 判断是自己创建的还是社区安装的
-    # 规则：vercel-、web-design- 等来自社区
-    if [[ "$dir_name" == "vercel-"* || "$dir_name" == "web-design-"* ]]; then
-        source="community"
-        source_repo="vercel-labs/agent-skills"
-        ((community_count++))
-    else
-        source="custom"
-        source_repo=""
+    # 判断来源：只有 skill-creator 创建的才算自建，其它一律视为社区
+    source="community"
+    source_repo=""
+    source_meta="$skill_dir/.skill-source.json"
+    if [[ -f "$source_meta" ]]; then
+        source=$(python3 - "$source_meta" <<'PY'
+import json, sys
+path = sys.argv[1]
+try:
+    data = json.load(open(path, "r", encoding="utf-8"))
+except Exception:
+    data = {}
+print((data.get("source") or "").strip())
+PY
+)
+        source_repo=$(python3 - "$source_meta" <<'PY'
+import json, sys
+path = sys.argv[1]
+try:
+    data = json.load(open(path, "r", encoding="utf-8"))
+except Exception:
+    data = {}
+print((data.get("source_repo") or "").strip())
+PY
+)
+    fi
+
+    if [[ "$source" == "custom" ]]; then
         ((custom_count++))
+    else
+        source="community"
+        ((community_count++))
     fi
 
     # 存储数据：source|name|dir_name|source_repo
@@ -155,6 +177,7 @@ if [[ $custom_count -gt 0 ]]; then
         if [[ "$source" != "custom" ]]; then
             continue
         fi
+        skill_file="$REPO_ROOT/$dir_name/SKILL.md"
 
         zh_desc="$(get_zh_desc "$name")"
         keywords="$(get_keywords "$name")"
@@ -185,6 +208,7 @@ if [[ $community_count -gt 0 ]]; then
         if [[ "$source" != "community" ]]; then
             continue
         fi
+        skill_file="$REPO_ROOT/$dir_name/SKILL.md"
 
         zh_desc="$(get_zh_desc "$name")"
         keywords="$(get_keywords "$name")"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# setup-universal-skills.sh - 简化版：与 add-skill 协同工作
+# setup-universal-skills.sh - 简化版：与 npx skills add 协同工作
 # 作用：在新设备上快速设置 AI Skills 中央仓库
 
 set -e
@@ -17,9 +17,9 @@ REMOTE_REPO="${REMOTE_REPO:-git@github.com:你的用户名/my-ai-skills.git}"
 
 echo -e "${BLUE}🚀 AI Skills 中央仓库设置${NC}"
 echo ""
-echo "本脚本配合 add-skill 工具使用，实现："
+echo "本脚本配合 npx skills add 工具使用，实现："
 echo "  • 中央仓库管理所有 skills (位于 ~/Workspace/my-ai-skills)"
-echo "  • add-skill 自动安装社区 skills"
+echo "  • skills add 自动安装社区 skills"
 echo "  • Git 跨设备同步"
 echo ""
 
@@ -49,30 +49,16 @@ fi
 echo ""
 
 # ============================================
-# 步骤 2：配置 add-skill 使用中央仓库
+# 步骤 2：按每个 skill 创建软链接（对齐 npx skills add 行为）
 # ============================================
-echo -e "${YELLOW}🔗 步骤 2/3: 配置 add-skill 集成${NC}"
+echo -e "${YELLOW}🔗 步骤 2/3: 配置 per-skill 软链接${NC}"
 
-# 检查 ~/.agents/skills 是否已正确配置
-if [ -L "$HOME/.agents/skills" ]; then
-    current_target=$(readlink "$HOME/.agents/skills")
-    if [ "$current_target" = "$SKILLS_DIR" ]; then
-        echo "✅ add-skill 已配置使用中央仓库"
-    else
-        echo "⚠️  重新配置 add-skill..."
-        rm "$HOME/.agents/skills"
-        ln -sf "$SKILLS_DIR" "$HOME/.agents/skills"
-        echo "✅ 已更新配置"
-    fi
-elif [ -d "$HOME/.agents/skills" ]; then
-    echo "⚠️  发现旧的 .agents/skills 目录，备份并转换为软链接..."
-    mv "$HOME/.agents/skills" "$HOME/.agents/skills-backup-$(date +%Y%m%d-%H%M%S)"
-    ln -sf "$SKILLS_DIR" "$HOME/.agents/skills"
-    echo "✅ 已转换为软链接"
+export SKILLS_DIR
+if [ -f "$SKILLS_DIR/shared/scripts/install.sh" ]; then
+    bash "$SKILLS_DIR/shared/scripts/install.sh"
 else
-    mkdir -p "$HOME/.agents"
-    ln -sf "$SKILLS_DIR" "$HOME/.agents/skills"
-    echo "✅ 已创建软链接: ~/.agents/skills -> $SKILLS_DIR"
+    echo "❌ 未找到安装脚本: $SKILLS_DIR/shared/scripts/install.sh"
+    exit 1
 fi
 
 echo ""
@@ -98,9 +84,9 @@ else
 fi
 
 echo ""
-echo "add-skill 集成："
-if [ -L "$HOME/.agents/skills" ]; then
-    echo "  ✅ ~/.agents/skills -> $SKILLS_DIR"
+echo "per-skill 链接："
+if [ -d "$HOME/.agents/skills" ]; then
+    echo "  ✅ ~/.agents/skills (目录)"
 else
     echo "  ❌ ~/.agents/skills 未配置"
 fi
@@ -113,8 +99,8 @@ echo ""
 
 echo -e "${BLUE}💡 下一步：${NC}"
 echo ""
-echo "1. 安装社区 skills (使用 add-skill)："
-echo "   npx add-skill vercel-labs/agent-skills -g"
+echo "1. 安装社区 skills (使用 npx skills add)："
+echo "   npx skills add vercel-labs/agent-skills -g"
 echo ""
 echo "2. 创建自己的 skill："
 echo "   cd $SKILLS_DIR"

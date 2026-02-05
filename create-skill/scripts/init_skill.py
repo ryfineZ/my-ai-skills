@@ -12,6 +12,8 @@ Examples:
 """
 
 import sys
+import json
+from datetime import datetime
 from pathlib import Path
 
 
@@ -259,6 +261,19 @@ def init_skill(skill_name, path):
     except Exception as e:
         print(f"❌ Error creating resource directories: {e}")
         return None
+
+    # Create source metadata for classification
+    try:
+        meta = {
+            "source": "custom",
+            "created_by": "skill-creator",
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        meta_path = skill_dir / ".skill-source.json"
+        meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2))
+        print("✅ Created .skill-source.json")
+    except Exception as e:
+        print(f"⚠️  Warning: Failed to write .skill-source.json: {e}")
 
     # Print next steps
     print(f"\n✅ Skill '{skill_name}' initialized successfully at {skill_dir}")

@@ -1,12 +1,12 @@
 ---
-name: skill-creator
-description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations. 用于创建新技能、构建skill、制作自定义技能等场景。
+name: create-skill
+description: Guide for creating effective skills. Supports global creation (in ~/.agents/skills Git repo) and project-level creation (in ./.agents/skills). Use when creating new skills to extend AI capabilities with specialized knowledge, workflows, or tool integrations. 用于创建新技能、构建skill、制作自定义技能等场景。
 license: Complete terms in LICENSE.txt
 ---
 
-# Skill Creator
+# Create Skill
 
-This skill provides guidance for creating effective skills.
+创建新的 skill，支持全局和项目级两种模式。
 
 ## Default behavior in this repo
 When creating or updating skills in the central repository (`~/Workspace/my-ai-skills`), default to **cross-platform compatibility**. If any platform-specific behavior is required, isolate it into separate sections or references (or split into platform-specific skills) so other platforms are not affected.
@@ -323,58 +323,44 @@ Write instructions for using the skill and its bundled resources.
 
 ### Step 5: Creating Cross-Platform Symlinks
 
-**Important**: After creating a skill, set up symlinks so all AI agents can access it. The approach differs between global and project-level skills to match `add-skill` behavior.
+**Important**: After creating a skill, set up symlinks so all AI agents can access it. Use the dedicated script to ensure correct two-layer symlink architecture.
 
 #### For Global Skills (Central Repository)
 
-For skills in the central repository (`~/Workspace/my-ai-skills`):
+For skills in the central repository (`~/Workspace/my-ai-skills`), **always use the script** instead of manual commands:
 
 ```bash
-# Get the skill name from the directory
-SKILL_NAME="<skill-name>"
-
-# List of agents to create symlinks for
-AGENTS=(
-  "$HOME/.claude/skills"
-  "$HOME/.cursor/skills"
-  "$HOME/.codex/skills"
-  "$HOME/.gemini/skills"
-  "$HOME/.antigravity/skills"
-  "$HOME/.windsurf/skills"
-  "$HOME/.opencode/skills"
-  "$HOME/.trae/skills"
-)
-
-# Create symlinks for each agent
-for agent_dir in "${AGENTS[@]}"; do
-  # Create the agent's skills directory if it doesn't exist
-  mkdir -p "$agent_dir"
-
-  # Create symlink: ~/.agent/skills/skill-name -> ../../.agents/skills/skill-name
-  ln -sf "../../.agents/skills/$SKILL_NAME" "$agent_dir/$SKILL_NAME"
-
-  echo "✅ Created symlink: $agent_dir/$SKILL_NAME"
-done
-
-echo "✅ Global cross-platform symlinks created for: $SKILL_NAME"
+# Run the symlink creation script
+bash ~/Workspace/my-ai-skills/skill-creator/scripts/create-symlinks.sh <skill-name>
 ```
+
+**Example**:
+```bash
+bash ~/Workspace/my-ai-skills/skill-creator/scripts/create-symlinks.sh humanize-text
+```
+
+**What this script does**:
+1. **First layer**: Creates `~/.agents/skills/<skill-name>` → `~/Workspace/my-ai-skills/<skill-name>` (absolute path)
+2. **Second layer**: Creates `~/.claude/skills/<skill-name>` → `../../.agents/skills/<skill-name>` (relative path, repeated for all 8 AI platforms)
+
+**Why use the script**:
+- Ensures correct two-layer architecture (manual commands often miss the first layer)
+- Handles edge cases (existing links, missing directories)
+- Consistent with `add-skill` behavior
+- Reduces human error
 
 #### For Project-Level Skills
 
-For skills in a specific project directory, match `add-skill` behavior:
+For skills in a specific project directory, the symlink structure is simpler (single layer):
 
 ```bash
-# Get the skill name and project directory
+# Navigate to project directory
+cd /path/to/project
+
+# Ensure skill exists in .agents/skills/
 SKILL_NAME="<skill-name>"
-PROJECT_DIR="."  # Current project directory
 
-# Ensure the skill exists in .agents/skills/
-if [ ! -d "$PROJECT_DIR/.agents/skills/$SKILL_NAME" ]; then
-  echo "❌ Skill not found in $PROJECT_DIR/.agents/skills/$SKILL_NAME"
-  exit 1
-fi
-
-# List of agents to create symlinks for
+# Create symlinks for each agent platform
 AGENTS=(
   ".claude/skills"
   ".cursor/skills"
@@ -386,28 +372,20 @@ AGENTS=(
   ".trae/skills"
 )
 
-# Create symlinks for each agent (relative to project directory)
 for agent_dir in "${AGENTS[@]}"; do
-  # Create the agent's skills directory if it doesn't exist
-  mkdir -p "$PROJECT_DIR/$agent_dir"
-
-  # Create symlink: .claude/skills/skill-name -> ../../.agents/skills/skill-name
-  ln -sf "../../.agents/skills/$SKILL_NAME" "$PROJECT_DIR/$agent_dir/$SKILL_NAME"
-
-  echo "✅ Created symlink: $PROJECT_DIR/$agent_dir/$SKILL_NAME"
+  mkdir -p "$agent_dir"
+  ln -sf "../../.agents/skills/$SKILL_NAME" "$agent_dir/$SKILL_NAME"
+  echo "✅ Created symlink: $agent_dir/$SKILL_NAME"
 done
-
-echo "✅ Project-level cross-platform symlinks created for: $SKILL_NAME"
 ```
 
-**Key differences:**
-- **Global skills**: Use absolute paths (`$HOME/.claude/skills`)
-- **Project skills**: Use relative paths (`.claude/skills`) within the project
-- **Both**: Point to `../../.agents/skills/<skill-name>` to match `add-skill` behavior
+**Key differences from global skills**:
+- **Global skills**: Two-layer architecture (central repo → ~/.agents/skills → platforms)
+- **Project skills**: Single-layer architecture (.agents/skills → platforms)
+- **Global skills**: Use absolute paths to central repo
+- **Project skills**: Use relative paths within project
 
-Replace `<skill-name>` with the actual skill name. This ensures the skill is immediately available to all AI coding agents.
-
-**Why this is needed**: The `add-skill` tool creates individual symlinks per skill (not whole-directory symlinks), so manually created skills need the same treatment to be visible across all agents.
+**Note**: Project-level skills are rare. Most skills should be created in the central repository (`~/Workspace/my-ai-skills`) for cross-project reuse.
 
 ### Step 6: Packaging a Skill
 
@@ -444,9 +422,11 @@ After creating or updating a skill, update the central repository's skills list:
 bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
 ```
 
-**补充中文描述与触发关键词（由当前 AI 负责）**：
+**生成中文用途描述与触发关键词（由执行该任务的 AI 负责）**：
 
-创建或更新 skill 后，AI 助手需要在 INSTALLED_SKILLS.md 中为每个条目补充中文描述与触发关键词，不保留英文原文描述：
+创建或更新 skill 后运行 `shared/scripts/update-skills-list.sh`。随后**由当前 AI**根据该 skill 的 `description` 生成中文用途描述与触发关键词，并写回 `INSTALLED_SKILLS.md`：
+- **中文描述（用途）**：若 description 为中文直接复用；若为英文则翻译为中文（保留专有名词）
+- **触发关键词**：从 description 中抽取 3-8 个关键词（中文/英文一致，专有名词不翻译）
 
 **条目格式**：
 ```
@@ -468,7 +448,7 @@ bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
   - 不要翻译专有名词（如 React、Next.js 等）
 
 - **触发方式**：
-  - 自动触发：创建/更新 skill 后自动补充中文描述与关键词
+  - 自动触发：创建/更新 skill 后运行 `update-skills-list.sh`，并由 AI 生成中文用途与关键词
   - 手动触发：用户说"翻译技能列表"、"中文化描述"、"补充触发关键词"
 
 ### Step 8: Iterate

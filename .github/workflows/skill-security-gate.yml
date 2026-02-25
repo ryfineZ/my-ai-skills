@@ -61,8 +61,8 @@ jobs:
           name: skill-security-reports
           path: .artifacts/skill-security/
 
-      - name: Upload SARIF to Code Scanning
-        if: always()
+      - name: Upload SARIF to Code Scanning (Optional)
+        if: always() && vars.ENABLE_CODE_SCANNING_UPLOAD == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: .artifacts/skill-security/summary.sarif

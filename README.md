@@ -144,7 +144,8 @@ bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
 ## 与中央仓库关联的关键 Skills
 
 ### install-skill
-用于封装 `npx skills add` 的安装流程（支持全局/项目级），并在全局安装后自动尝试更新 `INSTALLED_SKILLS.md`。
+用于封装 `npx skills add` 的安装/更新流程（支持全局/项目级），并在全局安装后自动尝试更新 `INSTALLED_SKILLS.md`。  
+安装和更新都会执行强制安全审计（远程预审 + 本地深扫）。
 
 常用命令：
 ```bash
@@ -155,6 +156,20 @@ bash ~/.agents/skills/install-skill/install-skill.sh \
 # 项目级安装（仅当前项目）
 bash ~/.agents/skills/install-skill/install-skill.sh \
   anthropics/skills --skill planning
+```
+
+### skill-security-guard
+用于对 skill 执行安装前安全审计，并输出 `SAFE/CAUTION/REVIEW/BLOCK` 结论。
+
+常用命令：
+```bash
+# 本地目录扫描
+python3 ~/.agents/skills/skill-security-guard/scripts/skill_security_guard.py \
+  --min-severity high local --path ~/.agents/skills/some-skill
+
+# GitHub 仓库扫描
+python3 ~/.agents/skills/skill-security-guard/scripts/skill_security_guard.py \
+  --min-severity high github --repo owner/repo
 ```
 
 ### create-skill
@@ -196,11 +211,13 @@ SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/shared/scripts/upda
 ├── code-quality-check/
 ├── create-skill/                   # 创建 skill 的指南工具
 ├── install-skill/                  # 安装 skill 的管理工具
+├── skill-security-guard/           # skill 安全扫描与门禁
 ├── vercel-react-best-practices/    # skills add 安装的
 ├── web-design-guidelines/          # skills add 安装的
 ├── shared/
 │   └── scripts/
 │       ├── install.sh              # 新设备安装脚本
+│       ├── skill-security-ci.sh    # 中央仓库安全门禁 CI
 │       ├── verify.sh               # 验证脚本
 │       └── update-skills-list.sh   # 更新 skills 列表
 ├── setup-universal-skills.sh       # 主设置脚本
@@ -234,8 +251,18 @@ SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/shared/scripts/upda
 **功能：**
 - 从 vercel-labs/agent-skills 等仓库安装 skills
 - 支持全局安装（`-g`）和项目级安装
+- 安装和更新均强制执行安全检查（skill-security-guard）
 - 自动更新 INSTALLED_SKILLS.md
 - 提醒提交到 Git
+
+### skill-security-ci
+用于中央仓库 PR/提交的自动安全门禁，输出 JSON/SARIF 并按阈值阻断高危变更。
+
+手动执行：
+```bash
+bash ~/.agents/skills/shared/scripts/skill-security-ci.sh \
+  --scope all --threshold high --output-dir ~/.agents/skills/.artifacts/skill-security
+```
 
 ### create-skill
 用于创建新的自定义 skills。

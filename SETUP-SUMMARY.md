@@ -2,7 +2,7 @@
 
 本文档记录了 AI Skills 中央仓库的配置方案和使用指南。
 
-**架构版本**: v2.1 - skills add 集成版
+**架构版本**: v2.2 - skills add 集成版
 
 ---
 
@@ -42,11 +42,11 @@ Git 仓库: ~/.agents/skills/ (真实目录)
 ### 在新设备上设置
 
 ```bash
-# 1. 克隆仓库
-git clone git@github.com:你的用户名/my-ai-skills.git ~/Workspace/my-ai-skills
+# 1. 克隆仓库到权威目录
+git clone git@github.com:你的用户名/my-ai-skills.git ~/.agents/skills
 
 # 2. 运行设置脚本
-bash ~/Workspace/my-ai-skills/setup-universal-skills.sh
+bash ~/.agents/skills/setup-universal-skills.sh
 
 # 3. 验证配置
 bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
@@ -57,7 +57,7 @@ bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
 **安装社区 skills：**
 ```bash
 npx skills add vercel-labs/agent-skills -g
-# 自动安装到 ~/Workspace/my-ai-skills/
+# 自动安装到 ~/.agents/skills/
 # 自动为所有 agents 创建软链接
 ```
 
@@ -89,11 +89,13 @@ git add . && git commit -m "feat: 添加 my-skill" && git push
 ├── agent-rules-sync/
 ├── create-skill/                   # 创建 skill 的指南工具
 ├── install-skill/                  # 安装 skill 的管理工具
+├── skill-security-guard/           # skill 安全扫描与门禁
 ├── vercel-react-best-practices/    # skills add 安装的
 ├── web-design-guidelines/          # skills add 安装的
 ├── shared/
 │   └── scripts/
 │       ├── install.sh              # 新设备安装脚本
+│       ├── skill-security-ci.sh    # 安全门禁 CI 脚本
 │       ├── verify.sh               # 验证脚本
 │       └── update-skills-list.sh   # 更新 skills 列表
 ├── setup-universal-skills.sh       # 主设置脚本
@@ -141,13 +143,14 @@ git add . && git commit -m "feat: 添加 my-skill" && git push
 **主设置脚本** - 在新设备上运行
 
 功能：
-1. 检查/克隆中央仓库
-2. 创建 `~/.agents/skills/<skill>` 的 per-skill 软链接
-3. 验证配置
+1. 检查/克隆中央仓库（`~/.agents/skills`）
+2. 创建/校验 `~/Workspace/my-ai-skills -> ~/.agents/skills` 软链接
+3. 创建 `~/.agents/skills/<skill>` 的 per-skill 软链接
+4. 验证配置
 
 用法：
 ```bash
-bash ~/Workspace/my-ai-skills/setup-universal-skills.sh
+bash ~/.agents/skills/setup-universal-skills.sh
 ```
 
 ### shared/scripts/install.sh
@@ -196,6 +199,22 @@ bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
 - 创建新 skill 后
 - 通过 skills add 安装 skill 后
 - 修改 skill 描述后
+
+### shared/scripts/skill-security-ci.sh
+
+**中央仓库安全门禁脚本** - 扫描变更 skill 并输出 JSON/SARIF
+
+功能：
+- 扫描变更或全量 skill
+- 输出每个 skill 的 JSON 报告
+- 生成聚合 `summary.json` 与 `summary.sarif`
+- 按阈值阻断（用于 CI）
+
+用法：
+```bash
+bash ~/Workspace/my-ai-skills/shared/scripts/skill-security-ci.sh \
+  --scope changed --base origin/main --head HEAD --threshold high
+```
 
 ---
 
@@ -259,7 +278,7 @@ npx skills add vercel-labs/agent-skills -g -y
 - ❌ 不兼容 skills add 工具
 - ❌ 新 agent 需要手动配置
 
-### v2.1 (当前版本)
+### v2.2 (当前版本)
 
 ```
 ~/.agents/skills/ (真实目录，Git 仓库)
@@ -421,6 +440,6 @@ A:
 
 ---
 
-**版本**: v2.0
-**更新时间**: 2026-01-26
+**版本**: v2.2
+**更新时间**: 2026-02-22
 **状态**: ✅ 完成

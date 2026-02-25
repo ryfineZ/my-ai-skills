@@ -1,0 +1,67 @@
+name: Skill Security Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  skill-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Skill Security CI
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+            HEAD_REF="${{ github.sha }}"
+            SCOPE="changed"
+          else
+            BASE_REF="${{ github.event.before }}"
+            HEAD_REF="${{ github.sha }}"
+            SCOPE="changed"
+            if [[ "$BASE_REF" == "0000000000000000000000000000000000000000" ]]; then
+              SCOPE="all"
+            fi
+          fi
+
+          echo "Scope: $SCOPE"
+          echo "Base:  $BASE_REF"
+          echo "Head:  $HEAD_REF"
+
+          bash shared/scripts/skill-security-ci.sh \
+            --scope "$SCOPE" \
+            --base "$BASE_REF" \
+            --head "$HEAD_REF" \
+            --threshold high \
+            --output-dir .artifacts/skill-security
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-security-reports
+          path: .artifacts/skill-security/
+
+      - name: Upload SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: .artifacts/skill-security/summary.sarif

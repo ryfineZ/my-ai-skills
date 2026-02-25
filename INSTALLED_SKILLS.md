@@ -2,7 +2,7 @@
 
 > 本文档由 `shared/scripts/update-skills-list.sh` 自动生成和维护
 > 文件名：`INSTALLED_SKILLS.md` - 避免与各 skill 目录中的 `SKILL.md` 混淆
-> 最后更新：2026-02-05 22:43:03
+> 最后更新：2026-02-22 19:32:27
 
 ---
 
@@ -12,7 +12,7 @@
 **用途：** 统一维护并同步多平台全局规则，处理明确写入指令。
 **触发关键词：** 新增全局规则、写入全局规则、同步规则、AGENTS、CLAUDE、GEMINI
 
-**位置：** `~/Workspace/my-ai-skills/agent-rules-sync/`
+**位置：** `/Users/zhangyufan/.agents/skills/agent-rules-sync/`
 
 ---
 
@@ -20,7 +20,7 @@
 **用途：** 提交前执行项目相关的代码质量检查与验证。
 **触发关键词：** 代码质量检查、lint、测试、提交前检查、质量门禁
 
-**位置：** `~/Workspace/my-ai-skills/code-quality-check/`
+**位置：** `/Users/zhangyufan/.agents/skills/code-quality-check/`
 
 ---
 
@@ -28,7 +28,7 @@
 **用途：** 按约定式提交规范生成并执行 git commit。
 **触发关键词：** git commit、提交代码、创建提交、约定式提交、commit message
 
-**位置：** `~/Workspace/my-ai-skills/commit-conventional/`
+**位置：** `/Users/zhangyufan/.agents/skills/commit-conventional/`
 
 ---
 
@@ -36,7 +36,7 @@
 **用途：** 创建或更新 skill 的流程与规范指南。
 **触发关键词：** 创建 skill、更新 skill、制作自定义技能、skill 设计、工作流
 
-**位置：** `~/Workspace/my-ai-skills/create-skill/`
+**位置：** `/Users/zhangyufan/.agents/skills/create-skill/`
 
 ---
 
@@ -44,7 +44,7 @@
 **用途：** 通过优化句法、节奏和写作模式降低 AI 文本检测率，帮助内容通过 GPTZero、腾讯朱雀等检测器；优化困惑度(Perplexity)和爆发性(Burstiness)指标，去除 Claude/ChatGPT 写作模式。
 **触发关键词：** 降低AI检测率、去AI味、通过GPTZero检测、让文章更像人写的、humanize、AI检测、腾讯朱雀、困惑度、Burstiness
 
-**位置：** `~/Workspace/my-ai-skills/humanize-text/`
+**位置：** `/Users/zhangyufan/.agents/skills/humanize-text/`
 
 ---
 
@@ -52,7 +52,15 @@
 **用途：** 使用 npx skills add 安装、更新并管理 skills 与来源仓库。
 **触发关键词：** 安装 skill、更新 skill、skills add、从 GitHub 安装、浏览 skills
 
-**位置：** `~/Workspace/my-ai-skills/install-skill/`
+**位置：** `/Users/zhangyufan/.agents/skills/install-skill/`
+
+---
+
+### skill-security-guard
+**用途：** 对本地目录或 GitHub 仓库中的 skill 做安装前安全审计，检测提示词劫持、下载执行、凭证窃取、数据外传、持久化和提权风险，并输出可用于门禁的 SAFE/CAUTION/REVIEW/BLOCK 结论。
+**触发关键词：** skill 安全检测、安装前审计、scan skill security、恶意 skill、prompt injection 检查、中央仓库门禁
+
+**位置：** `/Users/zhangyufan/.agents/skills/skill-security-guard/`
 
 ---
 
@@ -64,7 +72,7 @@
 
 **来源：** vercel-labs/agent-browser
 
-**位置：** `~/Workspace/my-ai-skills/agent-browser/`
+**位置：** `/Users/zhangyufan/.agents/skills/agent-browser/`
 
 ---
 
@@ -74,7 +82,7 @@
 
 **来源：** mikeastock/agents
 
-**位置：** `~/Workspace/my-ai-skills/brainstorming/`
+**位置：** `/Users/zhangyufan/.agents/skills/brainstorming/`
 
 ---
 
@@ -84,7 +92,7 @@
 
 **来源：** vercel-labs/skills
 
-**位置：** `~/Workspace/my-ai-skills/find-skills/`
+**位置：** `/Users/zhangyufan/.agents/skills/find-skills/`
 
 ---
 
@@ -94,7 +102,7 @@
 
 **来源：** anthropics/skills
 
-**位置：** `~/Workspace/my-ai-skills/frontend-design/`
+**位置：** `/Users/zhangyufan/.agents/skills/frontend-design/`
 
 ---
 
@@ -104,7 +112,7 @@
 
 **来源：** 
 
-**位置：** `~/Workspace/my-ai-skills/gh-address-comments/`
+**位置：** `/Users/zhangyufan/.agents/skills/gh-address-comments/`
 
 ---
 
@@ -114,7 +122,7 @@
 
 **来源：** blader/humanizer
 
-**位置：** `~/Workspace/my-ai-skills/humanizer/`
+**位置：** `/Users/zhangyufan/.agents/skills/humanizer/`
 
 ---
 
@@ -124,7 +132,7 @@
 
 **来源：** PleasePrompto/notebooklm-skill
 
-**位置：** `~/Workspace/my-ai-skills/notebooklm-skill/`
+**位置：** `/Users/zhangyufan/.agents/skills/notebooklm-skill/`
 
 ---
 
@@ -134,7 +142,7 @@
 
 **来源：** OthmanAdi/planning-with-files
 
-**位置：** `~/Workspace/my-ai-skills/planning-with-files/`
+**位置：** `/Users/zhangyufan/.agents/skills/planning-with-files/`
 
 ---
 
@@ -144,7 +152,7 @@
 
 **来源：** coreyhaines31/marketingskills
 
-**位置：** `~/Workspace/my-ai-skills/seo-audit/`
+**位置：** `/Users/zhangyufan/.agents/skills/seo-audit/`
 
 ---
 
@@ -154,7 +162,7 @@
 
 **来源：** vercel-labs/agent-skills
 
-**位置：** `~/Workspace/my-ai-skills/vercel-react-best-practices/`
+**位置：** `/Users/zhangyufan/.agents/skills/vercel-react-best-practices/`
 
 ---
 
@@ -164,14 +172,14 @@
 
 **来源：** vercel-labs/agent-skills
 
-**位置：** `~/Workspace/my-ai-skills/web-design-guidelines/`
+**位置：** `/Users/zhangyufan/.agents/skills/web-design-guidelines/`
 
 ---
 
 ## 📊 统计信息
 
-- **总计：** 17 个 skills
-- **自己创建：** 6 个
+- **总计：** 18 个 skills
+- **自己创建：** 7 个
 - **社区安装：** 11 个
 
 ---
@@ -180,7 +188,7 @@
 
 ```bash
 # 手动更新
-bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
+SKILLS_DIR=/Users/zhangyufan/.agents/skills bash /Users/zhangyufan/.agents/skills/shared/scripts/update-skills-list.sh
 
 # 自动更新时机
 # 1. 创建新 skill 后

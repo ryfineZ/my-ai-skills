@@ -1,11 +1,12 @@
 ---
 name: install-skill
-description: Install skills from GitHub repositories. Supports global installation (to ~/.agents/skills, shared across projects) and project-level installation (to ./.agents/skills, project-specific). Use when installing from vercel-labs/agent-skills, anthropics/skills, or custom repos.
+description: Install or update skills from GitHub repositories. Supports global installation (to ~/.agents/skills, shared across projects) and project-level installation (to ./.agents/skills, project-specific). Enforces security checks before and after install/update with skill-security-guard. Use when installing from vercel-labs/agent-skills, anthropics/skills, or custom repos.
 ---
 
 # Install Skill
 
 安装 skills，支持全局和项目级两种模式。
+安装和更新都会执行两次安全检查：远程预审 + 本地深扫。
 
 ## 快速使用
 
@@ -23,6 +24,15 @@ cd /path/to/project
 bash ~/.agents/skills/install-skill/install-skill.sh \
     anthropics/skills --skill planning
 ```
+
+## 安全检查（强制）
+
+`install-skill.sh` 现在会自动执行：
+
+1. **远程预审**：扫描 `owner/repo`（高危阈值）  
+2. **本地深扫**：扫描安装后的 skill 目录（高危阈值）
+
+任一步骤发现高危/严重风险会直接终止流程。
 
 ## 架构说明
 

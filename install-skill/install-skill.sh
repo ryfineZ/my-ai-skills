@@ -19,7 +19,119 @@ usage() {
     echo "参数:"
     echo "  --global, -g    全局安装（到 ~/.agents/skills，跨项目共享）"
     echo "  不带 -g         项目级安装（到 ./.agents/skills，仅当前项目）"
+    echo ""
+    echo "说明:"
+    echo "  安装和更新都会强制执行安全检查（远程预审 + 本地深扫）"
     exit 1
+}
+
+resolve_security_guard_script() {
+    local candidates=(
+        "$HOME/.agents/skills/skill-security-guard/scripts/skill_security_guard.py"
+        "$HOME/Workspace/my-ai-skills/skill-security-guard/scripts/skill_security_guard.py"
+    )
+    local script
+    for script in "${candidates[@]}"; do
+        if [[ -f "$script" ]]; then
+            echo "$script"
+            return 0
+        fi
+    done
+    return 1
+}
+
+print_guard_summary() {
+    local report_file="$1"
+    python3 - "$report_file" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    data = json.load(open(path, "r", encoding="utf-8"))
+except Exception:
+    print("    无法解析安全报告。")
+    raise SystemExit(0)
+
+summary = data.get("summary", {})
+counts = summary.get("severity_counts", {})
+print(f"    Verdict: {summary.get('verdict', 'UNKNOWN')}")
+print(
+    "    Summary: "
+    f"CRITICAL={counts.get('CRITICAL', 0)} "
+    f"HIGH={counts.get('HIGH', 0)} "
+    f"MEDIUM={counts.get('MEDIUM', 0)} "
+    f"LOW={counts.get('LOW', 0)}"
+)
+
+findings = data.get("findings", [])[:5]
+if findings:
+    print("    Top findings:")
+    for finding in findings:
+        sev = finding.get("severity", "UNKNOWN")
+        rule = finding.get("rule_id", "UNKNOWN_RULE")
+        file_path = finding.get("file_path", "?")
+        line_no = finding.get("line_number", 0)
+        print(f"      - [{sev}] {rule} @ {file_path}:{line_no}")
+PY
+}
+
+run_security_check() {
+    local guard_script="$1"
+    local mode="$2"
+    local target="$3"
+    local report_file
+    local rc
+    report_file="$(mktemp)"
+
+    local cmd=(python3 "$guard_script" --json --min-severity high "$mode")
+    if [[ "$mode" == "github" ]]; then
+        cmd+=(--repo "$target")
+    else
+        cmd+=(--path "$target")
+    fi
+
+    set +e
+    if [[ "$mode" == "github" ]] && [[ -n "${SECURITY_SCAN_GITHUB_TOKEN:-}" ]]; then
+        GITHUB_TOKEN="$SECURITY_SCAN_GITHUB_TOKEN" "${cmd[@]}" >"$report_file"
+        rc=$?
+    else
+        "${cmd[@]}" >"$report_file"
+        rc=$?
+    fi
+    set -e
+
+    if [[ "$rc" -eq 0 ]]; then
+        echo -e "${GREEN}✅ 安全检查通过 (${mode})${NC}"
+        print_guard_summary "$report_file"
+        rm -f "$report_file"
+        return 0
+    fi
+
+    if [[ -s "$report_file" ]]; then
+        echo -e "${RED}❌ 安全检查未通过 (${mode})${NC}"
+        print_guard_summary "$report_file"
+    else
+        echo -e "${RED}❌ 安全检查执行失败 (${mode}), exit=${rc}${NC}"
+    fi
+    rm -f "$report_file"
+    return 1
+}
+
+resolve_github_token_for_scan() {
+    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+        echo "$GITHUB_TOKEN"
+        return 0
+    fi
+    if command -v gh >/dev/null 2>&1; then
+        local token
+        token="$(gh auth token 2>/dev/null || true)"
+        if [[ -n "$token" ]]; then
+            echo "$token"
+            return 0
+        fi
+    fi
+    return 1
 }
 
 # 解析参数
@@ -68,31 +180,79 @@ if ! command -v npx >/dev/null 2>&1; then
     exit 1
 fi
 
+SECURITY_GUARD_SCRIPT="$(resolve_security_guard_script || true)"
+if [[ -z "$SECURITY_GUARD_SCRIPT" ]]; then
+    echo -e "${RED}❌ 错误: 未找到 skill-security-guard 扫描器${NC}"
+    echo -e "${YELLOW}请先确保以下路径存在其一：${NC}"
+    echo "  - ~/.agents/skills/skill-security-guard/scripts/skill_security_guard.py"
+    echo "  - ~/Workspace/my-ai-skills/skill-security-guard/scripts/skill_security_guard.py"
+    exit 1
+fi
+
+SECURITY_SCAN_GITHUB_TOKEN="$(resolve_github_token_for_scan || true)"
+if [[ -z "$SECURITY_SCAN_GITHUB_TOKEN" ]]; then
+    echo -e "${YELLOW}⚠️ 未检测到 GitHub Token，远程预审可能受 API 速率限制${NC}"
+fi
+
 # 确定安装位置和类型
 if [[ "$GLOBAL_INSTALL" == true ]]; then
     INSTALL_LOCATION="~/.agents/skills"
     INSTALL_TYPE="全局"
+    INSTALL_ROOT="$HOME/.agents/skills"
 else
     INSTALL_LOCATION="./.agents/skills"
     INSTALL_TYPE="项目级"
+    INSTALL_ROOT="$(pwd)/.agents/skills"
 fi
 
-echo -e "${BLUE}📦 ${INSTALL_TYPE}安装 Skill: ${SKILL_NAME}${NC}"
+TARGET_SKILL_PATH="$INSTALL_ROOT/$SKILL_NAME"
+if [[ -e "$TARGET_SKILL_PATH" ]]; then
+    OPERATION="更新"
+else
+    OPERATION="安装"
+fi
+
+echo -e "${BLUE}📦 ${INSTALL_TYPE}${OPERATION} Skill: ${SKILL_NAME}${NC}"
 echo -e "${BLUE}📍 来源: ${REPO}${NC}"
 echo -e "${BLUE}📂 位置: ${INSTALL_LOCATION}${NC}"
 echo ""
 
+echo -e "${YELLOW}🔒 执行远程安全预审...${NC}"
+if ! run_security_check "$SECURITY_GUARD_SCRIPT" github "$REPO"; then
+    echo -e "${RED}❌ 已阻断${OPERATION}，请先处理远程仓库风险${NC}"
+    exit 1
+fi
+
 # 使用 npx skills add（非交互式）
-echo -e "${YELLOW}⏳ 正在安装...${NC}"
+echo -e "${YELLOW}⏳ 正在${OPERATION}...${NC}"
 install_cmd=(npx skills add "$REPO" --skill "$SKILL_NAME" -y)
 if [[ "$GLOBAL_INSTALL" == true ]]; then
     install_cmd+=(-g)
 fi
 
 if "${install_cmd[@]}"; then
-    echo -e "${GREEN}✅ Skill 安装成功${NC}"
+    echo -e "${GREEN}✅ Skill ${OPERATION}成功${NC}"
 else
-    echo -e "${RED}❌ 安装失败${NC}"
+    echo -e "${RED}❌ ${OPERATION}失败${NC}"
+    exit 1
+fi
+
+if [[ ! -d "$TARGET_SKILL_PATH" ]]; then
+    FOUND_PATH="$(find "$INSTALL_ROOT" -maxdepth 2 -type d -name "$SKILL_NAME" 2>/dev/null | head -n 1 || true)"
+    if [[ -n "${FOUND_PATH:-}" ]]; then
+        TARGET_SKILL_PATH="$FOUND_PATH"
+    fi
+fi
+
+if [[ ! -d "$TARGET_SKILL_PATH" ]]; then
+    echo -e "${RED}❌ 无法定位已${OPERATION}的 skill 目录: ${TARGET_SKILL_PATH}${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${YELLOW}🔒 执行本地安全深扫...${NC}"
+if ! run_security_check "$SECURITY_GUARD_SCRIPT" local "$TARGET_SKILL_PATH"; then
+    echo -e "${RED}❌ 已${OPERATION}但安全检查未通过，请立即人工复核：${TARGET_SKILL_PATH}${NC}"
     exit 1
 fi
 
@@ -125,7 +285,7 @@ fi
 # 成功提示
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}✅ ${INSTALL_TYPE}安装成功！${NC}"
+echo -e "${GREEN}✅ ${INSTALL_TYPE}${OPERATION}成功！${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 

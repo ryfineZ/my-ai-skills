@@ -27,6 +27,7 @@ echo ""
 echo "本脚本配合 npx skills add 工具使用，实现："
 echo "  • 中央仓库管理所有 skills (位于 ~/.agents/skills)"
 echo "  • ~/Workspace/my-ai-skills 作为便捷入口软链接"
+echo "  • 第三方 skill 安装后直接落成中央仓库顶层真实目录"
 echo "  • skills add 自动安装社区 skills"
 echo "  • Git 跨设备同步"
 echo ""
@@ -114,7 +115,7 @@ echo ""
 # ============================================
 echo -e "${YELLOW}🔍 步骤 4/4: 验证配置${NC}"
 
-skill_count=$(find "$AGENTS_SKILLS_DIR" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+skill_count=$(find "$AGENTS_SKILLS_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) 2>/dev/null | while read -r path; do [[ -f "$path/SKILL.md" ]] && echo "$path"; done | wc -l | tr -d ' ')
 
 echo ""
 echo "中央仓库："

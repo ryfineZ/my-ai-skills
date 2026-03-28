@@ -1,540 +1,351 @@
-# 跨工具 Skills 最佳实践指南
+# Skills 编写最佳实践
 
-本指南帮助你创建兼容多个 AI 编码工具的 Skills。
+> 状态：有效  
+> 最后更新：2026-03-28
 
----
+本文件是**编写 skill 的经验指南**。  
+它回答的是：
 
-## 📋 通用兼容性原则
+- skill 应该怎么写，才更容易被多个客户端识别和正确使用
+- skill 内容应该怎么组织，才更稳定、可维护
 
-### 1. **分层设计**
+它**不是**中央仓库当前实现的权威说明。以下内容请看正式文档：
 
-```
-┌─────────────────────────────────┐
-│  核心功能层（所有工具支持）        │  ← 必需功能
-├─────────────────────────────────┤
-│  标准扩展层（大部分工具支持）      │  ← 常见功能
-├─────────────────────────────────┤
-│  工具特定层（特定工具支持）        │  ← 可选增强
-└─────────────────────────────────┘
-```
-
-### 2. **Frontmatter 字段优先级**
-
-| 优先级 | 字段 | 兼容性 |
-|--------|------|--------|
-| **必需** | `name`, `description` | 所有工具 |
-| **推荐** | `argument-hint`, `disable-model-invocation` | 大部分工具 |
-| **可选** | `compatibility`, `allowed-tools`, `model` | Claude Code |
-| **高级** | `hooks`, `context`, `agent` | Claude Code |
-
-### 3. **内容组织原则**
-
-```markdown
----
-# 必需字段（所有工具）
-name: skill-name
-description: 清晰的描述
-
-# 标准字段（大部分工具）
-argument-hint: [参数提示]
-disable-model-invocation: false
-
-# 兼容性标记（推荐添加）
-compatibility:
-  claude-code: full
-  codex: basic
-  gemini: basic
-
-# 高级字段（工具特定，注释掉）
-# allowed-tools: Read, Grep, Bash
-# model: sonnet
----
-
-# 核心功能（所有工具都能理解）
-
-基础指令和流程...
-
-## 标准功能（大部分工具支持）
-
-常见操作...
+- 仓库架构与目录职责：[`README.md`](/Users/zhangyufan/.agents/skills/README.md)
+- 中央仓库设计：[`skills-central-repo-design.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skills-central-repo-design.md)
+- 来源元数据：[`skill-source-schema.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skill-source-schema.md)
+- Claude 插件例外：[`claude-plugin-recommendations.md`](/Users/zhangyufan/.agents/skills/docs/architecture/claude-plugin-recommendations.md)
 
 ---
 
-## 🔧 高级功能（工具特定）
+## 1. 总原则
 
-> **兼容性说明**：以下功能仅在特定工具中可用
+### 1.1 先保证 skill 本体通用，再考虑平台增强
 
-### Claude Code 专属功能
+优先写出：
 
-...
+- 只依赖 `SKILL.md`
+- 即使没有平台特性也能成立
+- 不依赖某个单一客户端私有行为
+
+平台增强能力可以有，但不能让核心流程依赖它。
+
+### 1.2 不要把“仓库发布策略”写进 skill 本体
+
+当前中央仓库的发布差异，例如：
+
+- 是否发布到 `~/.claude/skills`
+- Claude Code 是否建议改走 plugin
+- 来源仓库、更新分组、bundle 信息
+
+这些都属于 [`.skill-source.json`](/Users/zhangyufan/.agents/skills/docs/architecture/skill-source-schema.md) 的职责，不应混进 `SKILL.md`。
+
+### 1.3 skill 是“可复用知识”，不是“问题复盘”
+
+适合做成 skill 的内容：
+
+- 可重复触发的工作流
+- 稳定的判断规则
+- 反复要用的工具说明
+- 经验证有效的模式
+
+不适合做成 skill 的内容：
+
+- 只适用于某个项目的一次性方案
+- 纯粹的开发日志
+- 可以直接自动化、无需模型判断的机械步骤
+
+---
+
+## 2. 推荐结构
+
+### 2.1 最小结构
+
+```text
+skill-name/
+├── SKILL.md
+└── .skill-source.json
 ```
 
+其中：
+
+- `SKILL.md` 是 skill 主体
+- `.skill-source.json` 是中央仓库来源元数据
+
+### 2.2 常见扩展结构
+
+```text
+skill-name/
+├── SKILL.md
+├── .skill-source.json
+├── scripts/
+├── references/
+└── assets/
+```
+
+用途建议：
+
+- `scripts/`
+  放可执行脚本、稳定工具、重复性强的辅助程序
+
+- `references/`
+  放较长的补充文档、规范、API 说明、流程细节
+
+- `assets/`
+  放模板、示例资源、输出素材
+
+### 2.3 不推荐的结构
+
+不再推荐维护：
+
+- `SKILL.basic.md`
+- “Claude 完整版 / 通用基础版” 双文件分发
+- 仅为了某个平台复制一套几乎相同的 skill
+
+当前仓库的方向是：
+
+- skill 实体保持单一
+- 平台差异尽量放在发布层和元数据层处理
+
 ---
 
-## 🛠️ 实用模板
+## 3. SKILL.md 写法
 
-### **模板 1：通用 Skill（推荐）**
+### 3.1 frontmatter 只保留真正有价值的字段
+
+最稳的最小模板：
 
 ```yaml
 ---
 name: your-skill-name
-description: 简洁清晰的描述，说明何时使用此 Skill
-argument-hint: [参数说明]
-disable-model-invocation: false
-
-# 兼容性标记
-compatibility:
-  claude-code: full
-  codex: basic
-  gemini: basic
-  github-copilot: basic
+description: Use when [具体触发条件]
 ---
-
-# Your Skill Name
-
-## 核心功能
-
-所有 AI 工具都支持的基础功能...
-
-## 使用步骤
-
-1. 步骤一
-2. 步骤二
-3. 步骤三
-
----
-
-## 🔧 高级功能（可选）
-
-> **兼容性**：以下功能仅在支持的工具中启用
-
-### 自动化验证（Claude Code）
-
-说明如何启用 Hooks...
-
-### 其他增强功能
-
-...
 ```
 
----
+优先保证这两个字段：
 
-### **模板 2：Claude Code 完整版 + 基础版**
+- `name`
+- `description`
 
-**目录结构**：
-```
-your-skill/
-├── SKILL.md              # Claude Code 完整版
-├── SKILL.basic.md        # 通用基础版（可选）
-├── COMPATIBILITY.md      # 兼容性说明
-└── scripts/              # 辅助脚本
-    └── validate.sh
-```
+### 3.2 `name` 规则
 
-**SKILL.md（完整版）**：
+- 使用小写字母、数字、连字符
+- 与目录名保持一致
+- 尽量短，但要表达清楚语义
+
+推荐：
+
+- `update-skill`
+- `doctor-skills`
+- `agent-rules-sync`
+
+不推荐：
+
+- `UpdateSkill`
+- `skill_update`
+- `my-awesome-skill-v2-final`
+
+### 3.3 `description` 规则
+
+`description` 的重点是：**什么时候该用这个 skill**，不是“它内部做了什么”。
+
+推荐写法：
+
+- 从 `Use when ...` 开始
+- 写清触发条件、症状、适用场景
+- 避免在这里塞实现细节
+
+推荐：
+
 ```yaml
----
-name: your-skill
-description: ...
-allowed-tools: Read, Grep, Bash
-model: sonnet
-
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "./scripts/validate.sh"
----
-
-# 完整功能实现...
+description: Use when updating installed skills from their original repositories, especially for centrally managed skills with .skill-source.json metadata.
 ```
 
-**SKILL.basic.md（基础版）**：
+不推荐：
+
 ```yaml
----
-name: your-skill
-description: ...
----
-
-# 基础功能实现（无 Hooks）...
+description: This skill scans metadata, groups bundles, reinstalls directories, refreshes links, and rewrites installed lists.
 ```
 
 ---
 
-## 📊 兼容性测试清单
+## 4. 内容组织建议
 
-创建 Skill 后，使用以下清单验证：
+### 4.1 把 `SKILL.md` 写成“入口文档”
 
-### **基础测试**
+好的 `SKILL.md` 应该让模型快速知道：
 
-- [ ] 所有工具都能识别 Skill（出现在列表中）
-- [ ] description 清晰，能正确触发
-- [ ] 核心功能在所有工具中都能执行
-- [ ] 没有报错或警告
+- 什么时候用
+- 不该什么时候用
+- 关键步骤是什么
+- 需要时去哪里看细节
 
-### **高级功能测试**
+推荐结构：
 
-- [ ] Claude Code 中高级功能正常工作
-- [ ] 其他工具会优雅忽略不支持的字段
-- [ ] 文档中清晰标注了兼容性信息
+```markdown
+# Skill Title
 
-### **测试脚本**
+## Overview
+
+## 适用场景
+
+## 核心流程
+
+## 关键约束
+
+## 使用方式
+
+## 脚本 / 参考文件
+```
+
+### 4.2 长内容移到 `references/`
+
+如果某段内容满足任一条件，建议拆出去：
+
+- 超过 100 行
+- 只有少数场景才会用到
+- 属于详细参考，而不是核心流程
+
+### 4.3 重复逻辑优先脚本化
+
+如果你发现某个 skill 每次都会重复：
+
+- 同一段 shell
+- 同一段 Python
+- 同一类目录扫描
+- 同一套校验逻辑
+
+优先放到 `scripts/`，而不是把大量代码直接塞进 `SKILL.md`。
+
+---
+
+## 5. 跨工具兼容建议
+
+### 5.1 核心流程不要依赖单一平台私有特性
+
+像下面这些能力，不能假设所有客户端都支持：
+
+- hooks
+- tool allowlist
+- 特定平台 commands
+- plugin 生命周期
+
+所以建议：
+
+- 把它们写成“可选增强”
+- 不要让 skill 的核心路径依赖这些能力
+
+### 5.2 Claude Code 要特殊看待，但不要反向绑架通用 skill
+
+Claude Code 支持的插件能力比普通 standalone skills 更强。  
+因此：
+
+- 若某个官方包明确建议 Claude 用 plugin 安装
+- 中央仓库应在发布层处理排除
+- 不要为了 Claude 单独复制一套 skill 结构
+
+### 5.3 不要在最佳实践里夸大“跨工具完全等价”
+
+更稳的说法是：
+
+- 尽量让 skill 本体通用
+- 平台特性通过增强路径处理
+- 不追求所有平台 100% 同形态
+
+---
+
+## 6. 与当前中央仓库的关系
+
+### 6.1 新建自定义 skill
+
+你自己创建的 skill，应直接落在：
+
+- [`~/.agents/skills`](/Users/zhangyufan/.agents/skills)
+
+并提交到中央仓库 Git。
+
+### 6.2 第三方安装 skill
+
+第三方 skill 不要手工复制散装文件。  
+统一走：
+
+- [`install-skill`](/Users/zhangyufan/.agents/skills/install-skill/SKILL.md)
+
+安装后会自动：
+
+- 扁平化落地到中央仓库顶层
+- 写 `.skill-source.json`
+- 按平台发布
+
+### 6.3 skill 的来源信息不要手填到 README
+
+来源真相应写在：
+
+- `.skill-source.json`
+
+展示层如 [`INSTALLED_SKILLS.md`](/Users/zhangyufan/.agents/skills/INSTALLED_SKILLS.md) 由脚本生成，不要手工维护。
+
+---
+
+## 7. 编写检查清单
+
+创建或修改 skill 后，至少检查这些：
+
+- `name` 是否和目录名一致
+- `description` 是否写的是触发条件，不是内部流程
+- `SKILL.md` 是否足够短、足够清晰
+- 复杂细节是否已经拆到 `references/` 或 `scripts/`
+- 是否避免了平台私有能力作为核心依赖
+- 是否补了 `.skill-source.json`
+
+推荐命令：
 
 ```bash
-#!/bin/bash
-# test-skill-compatibility.sh
-
-SKILL_NAME="your-skill-name"
-
-echo "🧪 测试 Skill 兼容性: $SKILL_NAME"
-echo ""
-
-# 测试 Claude Code
-if command -v claude &> /dev/null; then
-    echo "测试 Claude Code..."
-    claude "列出可用的 skills" | grep -i "$SKILL_NAME" && echo "✅ Claude Code" || echo "❌ Claude Code"
-fi
-
-# 测试 Codex
-if command -v codex &> /dev/null; then
-    echo "测试 Codex..."
-    codex "列出可用的 skills" | grep -i "$SKILL_NAME" && echo "✅ Codex" || echo "❌ Codex"
-fi
-
-# 测试 Gemini
-if command -v gemini &> /dev/null; then
-    echo "测试 Gemini..."
-    gemini "列出可用的 skills" | grep -i "$SKILL_NAME" && echo "✅ Gemini" || echo "❌ Gemini"
-fi
-
-echo ""
-echo "✅ 兼容性测试完成"
+python3 ~/.agents/skills/create-skill/scripts/quick_validate.py ~/.agents/skills/your-skill
+SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/shared/scripts/update-skills-list.sh"
+SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/doctor-skills/doctor-skills.sh"
 ```
 
 ---
 
-## 🎯 常见场景处理
+## 8. 常见反模式
 
-### **场景 1：Hooks 功能**
+### 8.1 `description` 写成实现摘要
 
-**问题**：Hooks 是 Claude Code 特有的，其他工具不支持。
+问题：
 
-**解决方案**：
-1. 在 frontmatter 中注释掉 hooks 配置
-2. 在文档中提供启用说明
-3. 核心功能不依赖 Hooks
+- 模型可能只看描述，不看正文
+- skill 触发会变模糊
 
-```yaml
----
-name: example-skill
-description: ...
+### 8.2 为每个平台维护一套几乎一样的 skill
 
-# 需要时取消注释（仅 Claude Code）
-# hooks:
-#   PreToolUse:
-#     - matcher: "Bash"
-#       hooks:
-#         - type: command
-#           command: "./scripts/check.sh"
----
+问题：
 
-# 核心功能（不依赖 Hooks）
+- 维护成本高
+- 内容漂移快
+- 容易出现行为不一致
 
-执行主要任务...
+### 8.3 把来源、安装、发布策略写死在 `SKILL.md`
 
----
+问题：
 
-## 🔧 可选：启用自动验证（Claude Code）
+- 污染 skill 主体
+- 和中央仓库元数据职责冲突
 
-在 frontmatter 中取消注释 hooks 配置以启用。
-```
+### 8.4 把大段参考内容直接塞进主文档
+
+问题：
+
+- 上下文成本高
+- 模型更难扫描核心流程
 
 ---
 
-### **场景 2：工具限制（allowed-tools）**
+## 9. 一句话建议
 
-**问题**：allowed-tools 限制可能不被所有工具支持。
+写 skill 时，优先追求这四件事：
 
-**解决方案**：
-```yaml
----
-name: read-only-skill
-description: 只读分析 Skill
-
-# 可选：限制工具（仅 Claude Code 有效）
-# allowed-tools: Read, Grep, Glob
----
-
-# 核心指令
-
-**注意**：此 Skill 设计为只读操作，不会修改文件。
-
-## 分析步骤
-
-1. 使用 Read/Grep 读取文件
-2. 分析内容
-3. 返回结果（不修改文件）
-```
-
----
-
-### **场景 3：动态上下文（!`command`）**
-
-**好消息**：大部分工具都支持动态上下文注入！
-
-```yaml
----
-name: pr-analysis
-description: 分析 Pull Request
----
-
-# PR 分析
-
-## 当前 PR 信息
-
-**变更文件**：
-!`gh pr diff --name-only`
-
-**代码差异**：
-!`gh pr diff`
-
-## 分析任务
-
-基于以上信息分析 PR...
-```
-
-**兼容性**：✅ Claude Code、✅ Codex、✅ Gemini
-
----
-
-## 📚 示例：完整的跨工具兼容 Skill
-
-### **code-review Skill**
-
-```yaml
----
-name: code-review
-description: 全面的代码审查，检查质量、安全和最佳实践。当用户要求审查代码或代码变更后使用
-argument-hint: [文件路径或范围]
-disable-model-invocation: false
-
-compatibility:
-  claude-code: full
-  codex: basic
-  gemini: basic
-  github-copilot: basic
-
-# Claude Code 高级功能（需要时取消注释）
-# allowed-tools: Read, Grep, Bash
-# model: sonnet
----
-
-# 代码审查 Skill
-
-全面审查代码质量、安全性和最佳实践。
-
-## 审查清单
-
-### 1. 代码质量
-- [ ] 代码清晰易读
-- [ ] 函数和变量命名良好
-- [ ] 没有重复代码（DRY 原则）
-- [ ] 适当的代码注释
-
-### 2. 类型安全（TypeScript/Python）
-- [ ] 使用类型注解
-- [ ] 无 any 类型（TypeScript）
-- [ ] 类型推断正确
-
-### 3. 错误处理
-- [ ] 显式错误处理，不静默失败
-- [ ] 边界条件已考虑
-- [ ] 异常情况有适当处理
-
-### 4. 安全性
-- [ ] 无硬编码密钥或敏感信息
-- [ ] 输入验证已实现
-- [ ] SQL 注入防护（如适用）
-
-### 5. 测试
-- [ ] 关键逻辑有单元测试
-- [ ] 测试覆盖充分
-- [ ] 边界用例已测试
-
-### 6. 文档
-- [ ] 复杂逻辑有注释
-- [ ] API 变更有文档
-- [ ] README 更新（如需要）
-
-## 审查流程
-
-### 步骤 1：读取代码
-
-使用参数 `$ARGUMENTS` 确定审查范围，如果未指定，检查最近的变更：
-
-```bash
-git diff --staged
-```
-
-### 步骤 2：按清单检查
-
-逐项检查上述清单，记录发现的问题。
-
-### 步骤 3：生成报告
-
-按优先级组织反馈：
-
-- 🔴 **严重问题**（必须修复）：安全漏洞、类型错误、逻辑错误
-- 🟡 **警告**（应该修复）：代码规范、可读性问题
-- 🟢 **建议**（考虑改进）：性能优化、架构建议
-
-### 步骤 4：提供修复示例
-
-对于严重问题和警告，提供具体的修复代码示例。
-
----
-
-## 🔧 高级功能（可选）
-
-> **兼容性说明**：
-> - ✅ **Claude Code**：支持自动化验证
-> - ⚠️ **其他工具**：手动执行审查流程
-
-### 自动化检查（Claude Code）
-
-在 frontmatter 中添加以下配置启用自动化：
-
-```yaml
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "./scripts/pre-review-check.sh"
-```
-
-### 工具限制
-
-限制为只读操作（推荐）：
-
-```yaml
-allowed-tools: Read, Grep, Glob
-```
-
----
-
-## 使用示例
-
-```bash
-# 审查所有暂存的变更
-/code-review
-
-# 审查特定文件
-/code-review src/auth/login.ts
-
-# 审查整个目录
-/code-review src/components/
-```
-```
-
----
-
-## 💡 总结建议
-
-### **优先级顺序**
-
-1. **✅ 优先保证基础功能通用**
-   - 核心流程在所有工具都能用
-   - 最小化对工具特定功能的依赖
-
-2. **✅ 高级功能作为可选增强**
-   - 用注释标注工具特定功能
-   - 提供启用说明
-   - 不影响基础使用
-
-3. **✅ 清晰的兼容性文档**
-   - 在 Skill 中标注兼容性
-   - 创建 COMPATIBILITY.md
-   - 说明降级行为
-
-### **推荐的文件组织**
-
-```
-~/Workspace/my-ai-skills/
-├── skill-name/
-│   ├── SKILL.md              # 主 Skill（通用 + 可选高级功能）
-│   ├── COMPATIBILITY.md      # 兼容性说明（可选）
-│   ├── README.md             # 使用文档（可选）
-│   └── scripts/              # 辅助脚本（可选）
-│       └── validate.sh
-├── INSTALLED_SKILLS.md       # 已安装的 skills 列表（自动维护）
-├── BEST-PRACTICES.md         # 本文档
-└── shared/scripts/
-    └── update-skills-list.sh # Skills 列表更新脚本
-```
-
-### **Skills 列表维护**
-
-创建或安装 skill 后，记得更新 skills 列表：
-
-```bash
-bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
-```
-
-这个脚本会：
-- 自动扫描所有 skills
-- 从 SKILL.md 提取信息
-- 更新 INSTALLED_SKILLS.md
-- 添加时间戳
-
----
-
-## 🎓 快速参考
-
-### **跨工具兼容的 Frontmatter 模板**
-
-```yaml
----
-# === 必需字段（所有工具） ===
-name: skill-name
-description: 简洁清晰的描述
-
-# === 标准字段（推荐） ===
-argument-hint: [参数]
-disable-model-invocation: false
-
-# === 兼容性标记（推荐） ===
-compatibility:
-  claude-code: full
-  codex: basic
-  gemini: basic
-
-# === 高级功能（可选，注释掉） ===
-# allowed-tools: Read, Grep, Bash
-# model: sonnet
-# context: default
-# hooks:
-#   PreToolUse:
-#     - matcher: "Bash"
-#       hooks:
-#         - type: command
-#           command: "./scripts/check.sh"
----
-```
-
-### **工具特定功能对照表**
-
-| 功能 | Claude Code | Codex | Gemini | GitHub Copilot |
-|------|-------------|-------|--------|----------------|
-| 基础 SKILL.md | ✅ | ✅ | ✅ | ✅ |
-| 动态上下文 !`cmd` | ✅ | ✅ | ✅ | ⚠️ |
-| allowed-tools | ✅ | ❌ | ❌ | ❌ |
-| hooks | ✅ | ❌ | ❌ | ❌ |
-| context: fork | ✅ | ❌ | ❌ | ❌ |
-| model 指定 | ✅ | ⚠️ | ⚠️ | ❌ |
-
-**图例**：
-- ✅ 完全支持
-- ⚠️ 部分支持或未确认
-- ❌ 不支持（会被忽略）
+1. 触发条件清晰
+2. 核心流程精炼
+3. 细节按需拆分
+4. 平台差异留给发布层和元数据层

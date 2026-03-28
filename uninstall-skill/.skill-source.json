@@ -1,0 +1,15 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "skill-creator",
+  "created_at": "2026-03-28T11:07:57Z",
+  "usage_zh": "删除中央仓库中的已安装 skill，并同步清理平台发布结果与已安装列表。",
+  "trigger_keywords": [
+    "uninstall-skill",
+    "卸载 skill",
+    "删除 skill",
+    "bundle 清理",
+    "平台清理",
+    "INSTALLED_SKILLS"
+  ]
+}

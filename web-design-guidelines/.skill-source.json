@@ -1,5 +1,11 @@
 {
   "source": "community",
   "source_repo": "vercel-labs/agent-skills",
-  "updated_at": "2026-01-26T13:50:56Z"
+  "updated_at": "2026-01-26T13:50:56Z",
+  "source_type": "single",
+  "package_name": "agent-skills",
+  "install_mode": "flattened-copy",
+  "update_group": "vercel-labs/agent-skills",
+  "source_path": "web-design-guidelines",
+  "platform_policies": {}
 }

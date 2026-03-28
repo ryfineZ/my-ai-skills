@@ -18,5 +18,11 @@
     "React",
     "Next.js"
   ],
-  "meta_generation": "current_ai"
+  "meta_generation": "current_ai",
+  "source_type": "single",
+  "package_name": "ui-ux-pro-max-skill",
+  "install_mode": "flattened-copy",
+  "update_group": "nextlevelbuilder/ui-ux-pro-max-skill",
+  "source_path": "ui-ux-pro-max",
+  "platform_policies": {}
 }

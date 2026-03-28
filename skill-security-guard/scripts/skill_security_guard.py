@@ -193,7 +193,7 @@ DOWNLOAD_EXEC_PATTERNS = [
         95,
     ),
     (
-        re.compile(r"(?i)\b(eval|exec)\b\s*\("),
+        re.compile(r"(?i)\beval\b\s*\(|(?<![\w.])exec\s*\("),
         "Dynamic eval/exec call detected",
         82,
     ),

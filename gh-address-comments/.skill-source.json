@@ -1,4 +1,13 @@
 {
+  "source": "community",
+  "source_type": "single",
+  "package_name": "skills",
+  "source_repo": "openai/skills",
+  "source_ref": "",
+  "source_path": "skills/gh-address-comments",
+  "install_mode": "flattened-copy",
+  "update_group": "openai/skills",
+  "platform_policies": {},
   "usage_zh": "用于定位当前分支对应的 GitHub PR 评论，并通过 gh CLI 处理审查意见与回写修复。",
   "trigger_keywords": [
     "PR评论",

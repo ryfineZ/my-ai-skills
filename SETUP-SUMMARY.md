@@ -2,7 +2,8 @@
 
 本文档记录了 AI Skills 中央仓库的配置方案和使用指南。
 
-**架构版本**: v2.2 - skills add 集成版
+**架构版本**: v2.4 - 扁平化安装与元数据驱动版
+**最后更新**: 2026-03-28
 
 ---
 
@@ -10,7 +11,7 @@
 
 ### 核心理念
 
-本方案结合了**中央仓库管理**和 **skills add 工具**的优势：
+本方案结合了**中央发布根**、**安装即扁平化**和 **skills add 工具**的优势：
 
 ```
 Git 仓库: ~/.agents/skills/ (真实目录)
@@ -18,9 +19,11 @@ Git 仓库: ~/.agents/skills/ (真实目录)
          │ 反向软链接（方便访问）
          │
 ~/Workspace/my-ai-skills → ~/.agents/skills
-         ↑
-         │ 自动为各个 agent 创建软链接
-         │
+
+第三方仓库在安装/更新时只临时拉取
+安装结果直接落在 ~/.agents/skills/<skill-name>/
+
+自动为各个 agent 创建软链接
   • ~/.claude/skills/skill-name → ../../.agents/skills/skill-name
   • ~/.cursor/skills/skill-name → ../../.agents/skills/skill-name
   • ~/.codex/skills/skill-name → ../../.agents/skills/skill-name
@@ -32,8 +35,11 @@ Git 仓库: ~/.agents/skills/ (真实目录)
 ✅ **统一管理** - 所有 skills 存储在一个位置
 ✅ **Git 同步** - 版本控制，跨设备同步
 ✅ **社区集成** - 使用 skills add 安装社区 skills
-✅ **自动配置** - skills add 自动为所有 agents 创建软链接
+✅ **扁平化安装** - 每个 skill 都是顶层真实目录，便于同步和维护
+✅ **统一来源元数据** - `.skill-source.json` 记录来源、更新分组和平台策略
+✅ **自动配置** - 中央发布脚本为所有 agents 创建软链接
 ✅ **单一副本** - 虽然软链接到多个 agents，但只有一份实际文件
+✅ **Claude 特例收敛** - 对官方建议插件安装的包，中央仓库会排除 standalone 发布，并在可用时自动安装 / 启用 Claude 插件
 
 ---
 
@@ -56,10 +62,20 @@ bash ~/Workspace/my-ai-skills/shared/scripts/verify.sh
 
 **安装社区 skills：**
 ```bash
-npx skills add vercel-labs/agent-skills -g
-# 自动安装到 ~/.agents/skills/
-# 自动为所有 agents 创建软链接
+bash ~/.agents/skills/install-skill/install-skill.sh \
+  vercel-labs/agent-skills --skill frontend-design --global
 ```
+
+**安装第三方 bundle：**
+```bash
+bash ~/.agents/skills/install-skill/install-skill.sh \
+  https://github.com/obra/superpowers.git --all-skills --bundle-root skills --global
+```
+
+补充说明：
+- 默认安装目标是中央仓库 `~/.agents/skills`
+- 只有用户明确要求时，才改为项目级安装
+- 若该包的 Claude 策略为 `install=plugin`，全局安装后会自动尝试完成 Claude 插件安装 / 启用
 
 **创建自己的 skill：**
 ```bash
@@ -145,7 +161,7 @@ git add . && git commit -m "feat: 添加 my-skill" && git push
 功能：
 1. 检查/克隆中央仓库（`~/.agents/skills`）
 2. 创建/校验 `~/Workspace/my-ai-skills -> ~/.agents/skills` 软链接
-3. 创建 `~/.agents/skills/<skill>` 的 per-skill 软链接
+3. 从中央仓库顶层 skill 实体生成各平台的 per-skill 软链接
 4. 验证配置
 
 用法：
@@ -155,7 +171,7 @@ bash ~/.agents/skills/setup-universal-skills.sh
 
 ### shared/scripts/install.sh
 
-**快速安装脚本** - 仅配置软链接
+**中央发布脚本** - 根据中央仓库顶层 skill 重建各平台链接
 
 前提：中央仓库已存在
 
@@ -192,6 +208,7 @@ SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/shared/scripts/veri
 - 从 SKILL.md frontmatter 提取名称和描述
 - 自动更新 INSTALLED_SKILLS.md
 - 区分自己创建的和社区安装的 skills
+- 优先读取 `.skill-source.json` 中的来源元数据
 - 添加时间戳
 
 用法：
@@ -201,7 +218,7 @@ bash ~/Workspace/my-ai-skills/shared/scripts/update-skills-list.sh
 
 **自动更新时机：**
 - 创建新 skill 后
-- 通过 skills add 安装 skill 后
+- 通过 `install-skill` / `update-skill` / `uninstall-skill` 变更 skill 后
 - 修改 skill 描述后
 
 ### shared/scripts/skill-security-ci.sh
@@ -255,13 +272,13 @@ npx skills add vercel-labs/agent-skills -g -y
 ### 工作原理
 
 ```
-1. npx skills add xxx -g
+1. install-skill / npx skills add
    ↓
-2. 从 git 拉取 skills
+2. 从 git 拉取 skill 或 bundle
    ↓
-3. 安装到 ~/.agents/skills/<skill>
+3. 扁平化落地到 ~/.agents/skills/<skill>
    ↓
-4. 为所有检测到的 agents 创建软链接
+4. 依据中央仓库发布到各 agents
 ```
 
 ---
@@ -406,32 +423,49 @@ ssh -T git@github.com
 
 - **README.md** - 快速入门和使用指南
 - **INSTALLED_SKILLS.md** - 已安装的 skills 列表（自动生成和维护）
-- **BEST-PRACTICES.md** - 创建跨工具兼容的 skills
-- **GITHUB-PUSH-GUIDE.md** - GitHub 推送指南
+- **BEST-PRACTICES.md** - 编写跨工具兼容 skill 的经验指南
+- **docs/architecture/** - 中央仓库改造的需求、设计、遗留问题与更新记录
+
+---
+
+## 📝 文档联动更新约定
+
+如果发生以下变化：
+
+- 安装 / 更新 / 卸载流程变化
+- 平台发布策略变化
+- Claude Code 插件排除策略变化
+- `.skill-source.json` schema 变化
+
+除了改脚本本身，还应联动检查：
+
+- **README.md**
+- **SETUP-SUMMARY.md**
+- **BEST-PRACTICES.md**
+- **docs/architecture/** 下的设计、遗留问题、更新记录
+- **INSTALLED_SKILLS.md**（若展示或来源规则受影响）
 
 ---
 
 ## 📞 FAQ
 
 **Q: 为什么要用 skills add？**
-A: skills add 是官方标准工具，自动管理多平台软链接，节省手动配置时间。
+A: `npx skills add` 是社区通用安装基础能力；在当前中央仓库里，更推荐通过 [`install-skill`](/Users/zhangyufan/.agents/skills/install-skill/SKILL.md) 统一安装，这样会同时写来源元数据、跑安全审计并刷新发布状态。
 
 **Q: 会不会安装多份 skills？**
 A: 不会！skills add 为各 agents 创建软链接，实际文件只在 `~/.agents/skills` 或中央仓库保留一份。
 
 **Q: 如何更新社区 skills？**
-A: 重新运行 `npx skills add vercel-labs/agent-skills --skill xxx -g` 即可。
+A:
+```bash
+bash ~/.agents/skills/update-skill/update-skill.sh --list
+bash ~/.agents/skills/update-skill/update-skill.sh --skill skill-name
+```
 
 **Q: 如何删除不需要的 skill？**
 A:
 ```bash
-cd ~/Workspace/my-ai-skills
-rm -rf skill-name
-
-# 更新列表
-bash shared/scripts/update-skills-list.sh
-
-# 提交
+bash ~/.agents/skills/uninstall-skill/uninstall-skill.sh --skill skill-name
 git add . && git commit -m "remove: skill-name" && git push
 ```
 
@@ -444,6 +478,6 @@ A:
 
 ---
 
-**版本**: v2.2
-**更新时间**: 2026-02-22
+**版本**: v2.4
+**更新时间**: 2026-03-28
 **状态**: ✅ 完成

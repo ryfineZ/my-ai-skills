@@ -1,0 +1,15 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "skill-creator",
+  "created_at": "2026-03-28T10:31:03Z",
+  "usage_zh": "按 .skill-source.json 回放来源信息，更新已安装 skill，并支持 bundle 分组更新。",
+  "trigger_keywords": [
+    "update-skill",
+    "更新 skill",
+    "bundle 更新",
+    "update_group",
+    "skill-source.json",
+    "已安装 skills"
+  ]
+}

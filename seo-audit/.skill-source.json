@@ -1,5 +1,11 @@
 {
   "source": "community",
   "source_repo": "coreyhaines31/marketingskills",
-  "updated_at": "2026-01-26T13:50:56Z"
+  "updated_at": "2026-01-26T13:50:56Z",
+  "source_type": "single",
+  "package_name": "marketingskills",
+  "install_mode": "flattened-copy",
+  "update_group": "coreyhaines31/marketingskills",
+  "source_path": "seo-audit",
+  "platform_policies": {}
 }

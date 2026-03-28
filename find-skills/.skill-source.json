@@ -2,5 +2,11 @@
   "source": "community",
   "source_repo": "vercel-labs/skills",
   "installed_by": "add-skill",
-  "installed_at": "2026-01-31T14:08:16Z"
+  "installed_at": "2026-01-31T14:08:16Z",
+  "source_type": "single",
+  "package_name": "skills",
+  "install_mode": "flattened-copy",
+  "update_group": "vercel-labs/skills",
+  "source_path": "find-skills",
+  "platform_policies": {}
 }

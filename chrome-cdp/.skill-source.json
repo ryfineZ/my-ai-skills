@@ -1,0 +1,25 @@
+{
+  "source": "community",
+  "source_repo": "pasky/chrome-cdp-skill",
+  "usage_zh": "连接本地运行中的 Chrome 浏览器会话，查看/截图/交互已打开的页面",
+  "trigger_keywords": [
+    "Chrome调试",
+    "CDP",
+    "浏览器截图",
+    "页面交互",
+    "DOM查看",
+    "实时会话",
+    "远程调试"
+  ],
+  "meta_generated_by": "current-ai",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-03-23T18:13:44Z",
+  "updated_at": "2026-03-23T18:13:44Z",
+  "source_type": "single",
+  "package_name": "chrome-cdp-skill",
+  "install_mode": "flattened-copy",
+  "update_group": "pasky/chrome-cdp-skill",
+  "source_path": "chrome-cdp",
+  "platform_policies": {}
+}

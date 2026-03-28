@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-SKILLS_DIR="${SKILLS_DIR:-$HOME/Workspace/my-ai-skills}"
+SKILLS_DIR="${SKILLS_DIR:-$HOME/.agents/skills}"
 
 if [[ -f "$SKILLS_DIR/.skillsrc" ]]; then
     # shellcheck disable=SC1090
@@ -20,6 +20,16 @@ fi
 REPO_ROOT="$(cd "$SKILLS_DIR" && pwd -P)"
 SKILLS_DOC="$REPO_ROOT/INSTALLED_SKILLS.md"
 
+discover_skill_files() {
+    local entry=""
+    while IFS= read -r entry; do
+        [[ -n "$entry" ]] || continue
+        [[ -e "$entry" ]] || continue
+        [[ -f "$entry/SKILL.md" ]] || continue
+        printf '%s\n' "$entry/SKILL.md"
+    done < <(find "$REPO_ROOT" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+}
+
 # 临时文件
 SKILLS_DATA=$(mktemp)
 EXISTING_META=$(mktemp)
@@ -30,15 +40,16 @@ echo "📁 仓库路径: $REPO_ROOT"
 # 读取现有列表中的中文描述与触发关键词（用于保留）
 
 if [[ -f "$SKILLS_DOC" ]]; then
-    SKILLS_DOC="$SKILLS_DOC" python3 - <<'PY' > "$EXISTING_META"
+SKILLS_DOC="$SKILLS_DOC" python3 - <<'PY' > "$EXISTING_META"
 import os
 import re
+from pathlib import Path
 
 path = os.environ.get("SKILLS_DOC")
 if not path or not os.path.exists(path):
     raise SystemExit(0)
 
-text = open(path, "r", encoding="utf-8").read()
+text = Path(path).read_bytes().decode("utf-8", errors="replace")
 pattern = re.compile(r'^###\s+(.+?)\n(.*?)(?=^###\s+|^##\s+|\Z)', re.M | re.S)
 
 for name, block in pattern.findall(text):
@@ -74,6 +85,18 @@ get_keywords() {
 is_placeholder_meta() {
     local value="${1:-}"
     [[ -z "$value" || "$value" == "（待补充）" || "$value" == "(待补充)" || "$value" == "待补充" ]]
+}
+
+contains_skill() {
+    local needle="$1"
+    shift
+    local item
+    for item in "$@"; do
+        if [[ "$item" == "$needle" ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 extract_skill_meta() {
@@ -154,7 +177,12 @@ description = clean(description)
 lower_haystack = f"{name} {description}".lower()
 
 rules = [
-    ((r"\binstall\b", r"\bupdate\b", r"skills add", r"github", r"\brepositor(?:y|ies)\b"), "安装和更新 skill", ["安装 skill", "更新 skill", "GitHub 仓库"]),
+    ((r"\bdoctor-skills\b", r"\bverify\.sh\b", r"diagnos(e|ing)", r"中央 skills 仓库状态", r"lightweight repair"), "诊断中央 skills 仓库状态并执行轻量修复", ["仓库诊断", "verify.sh", "轻量修复"]),
+    ((r"\buninstall-skill\b", r"\buninstall\b", r"\bremove\b", r"delete installed", r"删除并自动刷新平台"), "删除已安装 skill 并清理平台发布状态", ["卸载 skill", "删除 skill", "平台清理"]),
+    ((r"\bupdate-skill\b", r"\bupdate_group\b", r"bundle-aware", r"基于 \.skill-source\.json 更新", r"已安装 skill"), "更新已安装 skill 并按来源回放 bundle 变更", ["更新 skill", "bundle 更新", "skill-source.json"]),
+    ((r"\bdeep research\b", r"multi-step research", r"competitive landscaping", r"literature reviews?", r"due diligence"), "执行多步骤深度调研并输出带引用报告", ["深度调研", "带引用报告", "Gemini"]),
+    ((r"\btavily\b", r"\bweb search\b", r"search api integration"), "通过 Tavily API 执行网页搜索", ["Tavily", "网页搜索", "API"]),
+    ((r"\binstall\b", r"skills add", r"github", r"\brepositor(?:y|ies)\b"), "安装和更新 skill", ["安装 skill", "更新 skill", "GitHub 仓库"]),
     ((r"\bcreate-skill\b", r"\bskill-creator\b", r"creating effective skills", r"\bcustom skill\b", r"\bnew skill\b"), "创建和维护 skill", ["创建 skill", "维护 skill", "自定义 skill"]),
     ((r"\bsecurity\b", r"\baudit\b", r"\bscan\b", r"\brisk\b", r"\bguard\b", r"prompt injection", r"\bmalicious\b"), "执行 skill 安全审计与风险拦截", ["安全审计", "风险扫描", "Prompt Injection"]),
     ((r"\bbrowser\b", r"\bweb testing\b", r"\bform filling\b", r"\bscreenshot(s)?\b", r"\bdata extraction\b"), "自动化浏览器交互与网页数据提取", ["浏览器自动化", "网页测试", "截图", "数据提取"]),
@@ -162,7 +190,7 @@ rules = [
     ((r"\bplanning\b", r"\btask[_ -]?plan\b", r"\bcomplex tasks?\b", r"\bworkflow\b"), "规划复杂任务并沉淀执行计划", ["任务规划", "执行计划", "工作流"]),
     ((r"\bgit commit\b", r"\bconventional commit\b", r"\bcommit message\b"), "生成规范化 Git 提交", ["Git Commit", "约定式提交"]),
     ((r"\bseo\b", r"\branking\b", r"\bmeta tags?\b"), "审计网站 SEO 与页面优化问题", ["SEO 审计", "站内优化", "Meta 标签"]),
-    ((r"\bnotebooklm\b", r"\bgemini\b", r"\bcitation\b"), "基于 NotebookLM 进行来源可追溯检索", ["NotebookLM", "来源引用", "文档检索"]),
+    ((r"\bnotebooklm\b", r"\bcitation\b"), "基于 NotebookLM 进行来源可追溯检索", ["NotebookLM", "来源引用", "文档检索"]),
     ((r"\bpull request\b", r"\bpr comments?\b", r"\breview comments?\b", r"\bgh cli\b", r"address comments"), "处理 GitHub PR 评论并回写修复", ["PR 评论", "代码审查", "gh CLI"]),
     ((r"\bhumanize(r)?\b", r"\bgptzero\b", r"\bai detector\b"), "优化文本表达并降低 AI 写作痕迹", ["文本润色", "去 AI 痕迹", "AI 检测"]),
 ]
@@ -270,31 +298,30 @@ PY
 custom_count=0
 community_count=0
 
-# 扫描所有 skill 目录（排除特殊目录）
-for skill_dir in "$REPO_ROOT"/*/; do
-    # 跳过特殊目录
-    dir_name=$(basename "$skill_dir")
-    if [[ "$dir_name" == "shared" || "$dir_name" == ".git" || "$dir_name" == ".system" ]]; then
+# 扫描所有已发布的 skill 目录
+while IFS= read -r skill_file; do
+    if [[ -z "$skill_file" ]]; then
         continue
     fi
-
-    # 检查是否有 SKILL.md
-    skill_file="$skill_dir/SKILL.md"
-    if [[ ! -f "$skill_file" ]]; then
-        continue
-    fi
+    skill_dir="$(dirname "$skill_file")"
+    dir_name="$(basename "$skill_dir")"
+    dir_rel="${skill_dir#$REPO_ROOT/}"
 
     skill_meta="$(extract_skill_meta "$skill_file")"
     IFS=$'\t' read -r name auto_desc auto_keywords <<< "$skill_meta"
+    effective_name="$name"
 
     # 如果没有提取到 name，使用目录名
-    if [[ -z "$name" ]]; then
+    if [[ -z "$effective_name" ]]; then
+        effective_name="$dir_name"
         name="$dir_name"
     fi
 
     # 判断来源：只有 skill-creator 创建的才算自建，其它一律视为社区
     source="community"
     source_repo=""
+    source_type=""
+    package_name=""
     ai_desc=""
     ai_keywords=""
     source_meta="$skill_dir/.skill-source.json"
@@ -316,6 +343,8 @@ def clean(v):
 
 source = clean(data.get("source"))
 source_repo = clean(data.get("source_repo"))
+source_type = clean(data.get("source_type"))
+package_name = clean(data.get("package_name"))
 usage_zh = clean(data.get("usage_zh") or data.get("purpose_zh"))
 keywords = data.get("trigger_keywords") or data.get("keywords_zh") or []
 if isinstance(keywords, list):
@@ -323,16 +352,23 @@ if isinstance(keywords, list):
 else:
     kw_text = clean(keywords)
 
-print(f"{source}\x1f{source_repo}\x1f{usage_zh}\x1f{kw_text}")
+print(f"{source}\x1f{source_repo}\x1f{source_type}\x1f{package_name}\x1f{usage_zh}\x1f{kw_text}")
 PY
 )"
-        IFS=$'\x1f' read -r source source_repo ai_desc ai_keywords <<< "$source_meta_row"
+        IFS=$'\x1f' read -r source source_repo source_type package_name ai_desc ai_keywords <<< "$source_meta_row"
     fi
 
     if [[ "$source" == "custom" ]]; then
         ((custom_count++))
     else
         source="community"
+        if [[ -n "$source_repo" && "$source_type" == "bundle" && -n "$package_name" ]]; then
+            source_repo="$source_repo (bundle: $package_name)"
+        elif [[ -z "$source_repo" && -n "$package_name" ]]; then
+            source_repo="$package_name"
+        elif [[ -z "$source_repo" ]]; then
+            source_repo="（未记录）"
+        fi
         ((community_count++))
     fi
 
@@ -364,8 +400,8 @@ PY
 
     # 存储数据（使用 Unit Separator 作为分隔符，避免空字段错位）
     printf '%s\x1f%s\x1f%s\x1f%s\x1f%s\x1f%s\n' \
-        "$source" "$name" "$dir_name" "$source_repo" "$zh_desc" "$keywords" >> "$SKILLS_DATA"
-done
+        "$source" "$name" "$dir_rel" "$source_repo" "$zh_desc" "$keywords" >> "$SKILLS_DATA"
+done < <(discover_skill_files)
 
 # 按类型和名称排序
 sort "$SKILLS_DATA" -o "$SKILLS_DATA"
@@ -392,7 +428,7 @@ if [[ $custom_count -gt 0 ]]; then
     echo "## 🎨 自己创建的 Skills" >> "$SKILLS_DOC"
     echo "" >> "$SKILLS_DOC"
 
-    while IFS=$'\x1f' read -r source name dir_name source_repo zh_desc keywords; do
+    while IFS=$'\x1f' read -r source name dir_rel source_repo zh_desc keywords; do
         if [[ "$source" != "custom" ]]; then
             continue
         fi
@@ -401,7 +437,7 @@ if [[ $custom_count -gt 0 ]]; then
         echo "**用途：** $zh_desc" >> "$SKILLS_DOC"
         echo "**触发关键词：** $keywords" >> "$SKILLS_DOC"
         echo "" >> "$SKILLS_DOC"
-        echo "**位置：** \`$REPO_ROOT/$dir_name/\`" >> "$SKILLS_DOC"
+        echo "**位置：** \`$REPO_ROOT/$dir_rel/\`" >> "$SKILLS_DOC"
         echo "" >> "$SKILLS_DOC"
         echo "---" >> "$SKILLS_DOC"
         echo "" >> "$SKILLS_DOC"
@@ -413,7 +449,7 @@ if [[ $community_count -gt 0 ]]; then
     echo "## 🌐 社区安装的 Skills" >> "$SKILLS_DOC"
     echo "" >> "$SKILLS_DOC"
 
-    while IFS=$'\x1f' read -r source name dir_name source_repo zh_desc keywords; do
+    while IFS=$'\x1f' read -r source name dir_rel source_repo zh_desc keywords; do
         if [[ "$source" != "community" ]]; then
             continue
         fi
@@ -424,7 +460,7 @@ if [[ $community_count -gt 0 ]]; then
         echo "" >> "$SKILLS_DOC"
         echo "**来源：** $source_repo" >> "$SKILLS_DOC"
         echo "" >> "$SKILLS_DOC"
-        echo "**位置：** \`$REPO_ROOT/$dir_name/\`" >> "$SKILLS_DOC"
+        echo "**位置：** \`$REPO_ROOT/$dir_rel/\`" >> "$SKILLS_DOC"
         echo "" >> "$SKILLS_DOC"
         echo "---" >> "$SKILLS_DOC"
         echo "" >> "$SKILLS_DOC"

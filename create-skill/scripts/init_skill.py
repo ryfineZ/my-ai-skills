@@ -264,10 +264,13 @@ def init_skill(skill_name, path):
 
     # Create source metadata for classification
     try:
+        now = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         meta = {
             "source": "custom",
+            "source_type": "custom",
             "created_by": "skill-creator",
-            "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "created_at": now,
+            "updated_at": now,
         }
         meta_path = skill_dir / ".skill-source.json"
         meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2))

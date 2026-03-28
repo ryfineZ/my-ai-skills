@@ -1,0 +1,15 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "skill-creator",
+  "created_at": "2026-03-28T11:07:57Z",
+  "usage_zh": "诊断中央 skills 仓库状态，并在需要时执行轻量修复。",
+  "trigger_keywords": [
+    "doctor-skills",
+    "仓库诊断",
+    "verify.sh",
+    "skill-source.json",
+    "平台链接",
+    "轻量修复"
+  ]
+}

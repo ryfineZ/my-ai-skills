@@ -82,9 +82,18 @@ def main() -> int:
 
     data = load_json(meta_path)
     ts = now_utc()
+    if "source" not in data and args.repo:
+        data["source"] = "community"
+    if "source_type" not in data and args.repo:
+        data["source_type"] = "single"
+    if "package_name" not in data and args.repo:
+        data["package_name"] = args.repo.rstrip("/").split("/")[-1]
     if args.repo:
-        data["source"] = data.get("source") or "community"
         data["source_repo"] = args.repo
+        data.setdefault("source_ref", "")
+        data.setdefault("install_mode", "flattened-copy")
+        data.setdefault("update_group", args.repo)
+        data.setdefault("platform_policies", {})
     data["usage_zh"] = usage_zh
     data["trigger_keywords"] = keywords
     data["meta_generated_by"] = args.generated_by

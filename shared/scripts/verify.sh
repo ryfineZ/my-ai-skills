@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-SKILLS_DIR="${SKILLS_DIR:-$HOME/Workspace/my-ai-skills}"
+SKILLS_DIR="${SKILLS_DIR:-$HOME/.agents/skills}"
 AGENTS_SKILLS_DIR="$HOME/.agents/skills"
 AGENTS_SKILLS_REAL=""
 ERROR_COUNT=0
@@ -57,6 +57,88 @@ trap cleanup EXIT
 resolve_dir() {
     local dir="$1"
     (cd "$dir" 2>/dev/null && pwd -P)
+}
+
+should_expect_tool_link() {
+    local skill_dir="$1"
+    local tool_dir="$2"
+    local meta_file="$skill_dir/.skill-source.json"
+
+    if [[ "$tool_dir" != "$HOME/.claude/skills" ]]; then
+        return 0
+    fi
+
+    if [[ ! -f "$meta_file" ]]; then
+        return 0
+    fi
+
+    python3 - "$meta_file" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    data = json.load(open(path, "r", encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+
+policies = data.get("platform_policies") or {}
+if not isinstance(policies, dict):
+    raise SystemExit(0)
+claude = policies.get("claude_code") or {}
+if not isinstance(claude, dict):
+    raise SystemExit(0)
+
+publish = claude.get("publish")
+if publish is False:
+    raise SystemExit(1)
+PY
+}
+
+discover_skill_files() {
+    local entry=""
+    while IFS= read -r entry; do
+        [[ -n "$entry" ]] || continue
+        [[ -e "$entry" ]] || continue
+        [[ -f "$entry/SKILL.md" ]] || continue
+        printf '%s\n' "$entry/SKILL.md"
+    done < <(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+}
+
+extract_skill_name() {
+    local skill_file="$1"
+    local fallback_name="$2"
+    local skill_name=""
+
+    skill_name="$(python3 - "$skill_file" <<'PY'
+import re
+import sys
+
+path = sys.argv[1]
+try:
+    content = open(path, "r", encoding="utf-8").read()
+except Exception:
+    raise SystemExit(0)
+
+match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+frontmatter = match.group(1) if match else ""
+
+for raw_line in frontmatter.splitlines():
+    line = raw_line.strip()
+    if not line or ":" not in line:
+        continue
+    key, value = line.split(":", 1)
+    if key.strip().lower() == "name":
+        print(value.strip().strip('"').strip("'"))
+        break
+PY
+)"
+
+    if [[ -n "$skill_name" ]]; then
+        printf '%s\n' "$skill_name"
+    else
+        printf '%s\n' "$fallback_name"
+    fi
 }
 
 contains_skill() {
@@ -220,9 +302,10 @@ SKILL_FILES=()
 if [[ -d "$SKILLS_DIR" ]]; then
     while IFS= read -r skill_file; do
         [[ -z "$skill_file" ]] && continue
+        skill_name="$(extract_skill_name "$skill_file" "$(basename "$(dirname "$skill_file")")")"
         SKILL_FILES+=("$skill_file")
-        SKILL_NAMES+=("$(basename "$(dirname "$skill_file")")")
-    done < <(find "$SKILLS_DIR" -maxdepth 2 -type f -name "SKILL.md" | sort)
+        SKILL_NAMES+=("$skill_name")
+    done < <(discover_skill_files)
 fi
 SKILL_COUNT=${#SKILL_FILES[@]}
 log "   Skills 数量: $SKILL_COUNT"
@@ -268,7 +351,8 @@ done
 log ""
 log "📋 可用 Skills："
 for skill in "${SKILL_FILES[@]-}"; do
-    skill_name="$(basename "$(dirname "$skill")")"
+    skill_name="$(extract_skill_name "$skill" "$(basename "$(dirname "$skill")")")"
+    skill_dir="$(dirname "$skill")"
     desc="$(grep "^description:" "$skill" 2>/dev/null | head -1 | sed 's/description: *//' || true)"
     [[ -z "$desc" ]] && desc="无描述"
     log "  - $skill_name: $desc"
@@ -295,6 +379,12 @@ for skill in "${SKILL_FILES[@]-}"; do
     fi
 
     for link in "${links[@]}"; do
+        if ! should_expect_tool_link "$skill_dir" "$link"; then
+            if [[ -e "$link/$skill_name" || -L "$link/$skill_name" ]]; then
+                warn_issue "unexpected_tool_link" "$link/$skill_name" "该平台不应发布但仍存在链接：$link/$skill_name"
+            fi
+            continue
+        fi
         if [[ -L "$link/$skill_name" ]]; then
             if [[ ! -e "$link/$skill_name" ]]; then
                 warn_issue "broken_tool_link" "$link/$skill_name" "损坏链接：$link/$skill_name"

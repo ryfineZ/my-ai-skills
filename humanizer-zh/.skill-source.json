@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "created_by": "skill-creator",
+  "created_at": "2026-03-25T15:22:23Z",
+  "usage_zh": "去除 AI 写作痕迹，使文本更自然有人味",
+  "trigger_keywords": [
+    "去除AI痕迹",
+    "去AI味",
+    "人性化文本",
+    "改写AI文章",
+    "降低AI检测",
+    "AI写作模式"
+  ],
+  "meta_generated_by": "current-ai",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-03-25T15:33:42Z",
+  "updated_at": "2026-03-25T15:33:42Z",
+  "source_type": "custom"
+}

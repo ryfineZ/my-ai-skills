@@ -8,10 +8,19 @@ description: Install or update skills from GitHub repositories. Supports global 
 安装 skills，支持全局和项目级两种模式。
 安装和更新都会执行两次安全检查：远程预审 + 本地深扫。
 
+默认目标是**中央仓库** `~/.agents/skills`。只有用户明确要求“项目级 / 当前项目专用 / 本地临时”时，才应改为 `./.agents/skills`。
+
 安装完成后，**由当前执行该 skill 的 AI** 直接生成并写入元数据（不依赖 API key）：
 - `用途`：中文一句话
 - `触发关键词`：5-10 个
 - `来源`：安装仓库（`source_repo`）
+- `来源类型`：例如 `single` / `bundle`
+- `更新分组`：例如 `update_group`
+
+如果某个包的来源元数据或上游文档表明 **Claude Code 应通过插件安装**，则：
+- 中央仓库仍然要安装并维护这批 skill
+- 不应再把它们发布到 `~/.claude/skills`
+- 全局安装时，如本机可用 Claude Code，应继续自动执行对应插件的安装 / 启用，而不是只给提示
 
 ## 快速使用
 
@@ -67,6 +76,11 @@ SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/shared/scripts/upda
 ~/Workspace/my-ai-skills -> ~/.agents/skills  (软链接)
 ~/.claude/skills/skill-name -> ../../.agents/skills/skill-name
 ```
+
+补充规则：
+- `install-skill` 默认面向中央仓库，不面向当前客户端私有目录
+- 若 `platform_policies.claude_code.install=plugin`，则全局安装完成后会尝试自动为 Claude Code 安装 / 启用插件
+- 若该包不应发布为 Claude standalone skill，则 `~/.claude/skills` 中不会出现对应顶层链接
 
 ### 项目级模式
 ```

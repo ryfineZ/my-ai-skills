@@ -28,6 +28,7 @@ from pathlib import Path
 
 skills_dir = Path(sys.argv[1]).expanduser().resolve()
 doc_path = Path(sys.argv[2]).expanduser()
+search_root = skills_dir / "packages" if (skills_dir / "packages").is_dir() else skills_dir
 
 
 def extract_skill_name(skill_dir: Path) -> str:
@@ -54,7 +55,9 @@ def extract_skill_name(skill_dir: Path) -> str:
 
 groups: "OrderedDict[str, dict]" = OrderedDict()
 
-for entry in sorted(skills_dir.iterdir(), key=lambda item: item.name):
+for entry in sorted(search_root.rglob("*"), key=lambda item: str(item)):
+    if not entry.is_dir():
+        continue
     skill_file = entry / "SKILL.md"
     meta_file = entry / ".skill-source.json"
     if not skill_file.is_file() or not meta_file.is_file():

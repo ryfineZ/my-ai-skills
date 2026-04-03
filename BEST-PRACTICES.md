@@ -11,10 +11,10 @@
 
 它**不是**中央仓库当前实现的权威说明。以下内容请看正式文档：
 
-- 仓库架构与目录职责：[`README.md`](/Users/zhangyufan/.agents/skills/README.md)
-- 中央仓库设计：[`skills-central-repo-design.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skills-central-repo-design.md)
-- 来源元数据：[`skill-source-schema.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skill-source-schema.md)
-- Claude 插件例外：[`claude-plugin-recommendations.md`](/Users/zhangyufan/.agents/skills/docs/architecture/claude-plugin-recommendations.md)
+- 仓库架构与目录职责：[`README.md`](/Users/zhangyufan/Workspace/skills-central/README.md)
+- 中央仓库设计：[`skills-central-repo-design.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skills-central-repo-design.md)
+- 来源元数据：[`skill-source-schema.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skill-source-schema.md)
+- Claude 插件例外：[`claude-plugin-recommendations.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/claude-plugin-recommendations.md)
 
 ---
 
@@ -38,7 +38,7 @@
 - Claude Code 是否建议改走 plugin
 - 来源仓库、更新分组、bundle 信息
 
-这些都属于 [`.skill-source.json`](/Users/zhangyufan/.agents/skills/docs/architecture/skill-source-schema.md) 的职责，不应混进 `SKILL.md`。
+这些都属于 [`.skill-source.json`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skill-source-schema.md) 的职责，不应混进 `SKILL.md`。
 
 ### 1.3 skill 是“可复用知识”，不是“问题复盘”
 
@@ -269,7 +269,7 @@ Claude Code 支持的插件能力比普通 standalone skills 更强。
 第三方 skill 不要手工复制散装文件。  
 统一走：
 
-- [`install-skill`](/Users/zhangyufan/.agents/skills/install-skill/SKILL.md)
+- [`install-skill`](/Users/zhangyufan/Workspace/skills-central/install-skill/SKILL.md)
 
 安装后会自动：
 
@@ -283,7 +283,7 @@ Claude Code 支持的插件能力比普通 standalone skills 更强。
 
 - `.skill-source.json`
 
-展示层如 [`INSTALLED_SKILLS.md`](/Users/zhangyufan/.agents/skills/INSTALLED_SKILLS.md) 由脚本生成，不要手工维护。
+展示层如 [`INSTALLED_SKILLS.md`](/Users/zhangyufan/Workspace/skills-central/INSTALLED_SKILLS.md) 由脚本生成，不要手工维护。
 
 ---
 
@@ -301,9 +301,11 @@ Claude Code 支持的插件能力比普通 standalone skills 更强。
 推荐命令：
 
 ```bash
-python3 ~/.agents/skills/create-skill/scripts/quick_validate.py ~/.agents/skills/your-skill
-SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/shared/scripts/update-skills-list.sh"
-SKILLS_DIR="$HOME/.agents/skills" bash "$HOME/.agents/skills/doctor-skills/doctor-skills.sh"
+python3 ~/Workspace/skills-central/packages/core/create-skill/scripts/quick_validate.py \
+  ~/Workspace/skills-central/packages/custom/your-skill
+SKILLS_DIR="$HOME/.agents/skills" SOURCE_SKILLS_DIR="$HOME/Workspace/skills-central" \
+  bash "$HOME/Workspace/skills-central/shared/scripts/update-skills-list.sh"
+bash ~/Workspace/skills-central/packages/core/doctor-skills/doctor-skills.sh
 ```
 
 ---

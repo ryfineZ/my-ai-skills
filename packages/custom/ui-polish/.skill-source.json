@@ -1,0 +1,22 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "skill-creator",
+  "created_at": "2026-04-02T07:59:54Z",
+  "updated_at": "2026-04-02T08:07:37Z",
+  "usage_zh": "统一提升 Web、H5、小程序、扩展、移动端和桌面应用界面的质感、层级与完成度。",
+  "trigger_keywords": [
+    "前端审美",
+    "UI 美化",
+    "界面优化",
+    "小程序 UI",
+    "H5 设计",
+    "移动端 UI",
+    "扩展界面",
+    "桌面应用 UI"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-02T08:07:37Z"
+}

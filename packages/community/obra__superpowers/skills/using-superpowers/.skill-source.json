@@ -1,0 +1,24 @@
+{
+  "source": "community",
+  "source_type": "bundle",
+  "package_name": "superpowers",
+  "source_repo": "https://github.com/obra/superpowers.git",
+  "source_ref": "eafe962b18f6c5dc70fb7c8cc7e83e61f4cdde06",
+  "source_path": "skills/using-superpowers",
+  "bundle_root": "skills",
+  "install_mode": "flattened-copy",
+  "update_group": "obra/superpowers",
+  "platform_policies": {
+    "claude_code": {
+      "publish": false,
+      "install": "plugin",
+      "plugin_name": "superpowers",
+      "install_hint": "/plugin install superpowers@superpowers-marketplace",
+      "plugin_marketplace": "superpowers-marketplace",
+      "plugin_marketplace_source": "obra/superpowers-marketplace"
+    }
+  },
+  "installed_by": "install-skill",
+  "installed_at": "2026-03-28T11:18:09Z",
+  "updated_at": "2026-03-28T11:18:09Z"
+}

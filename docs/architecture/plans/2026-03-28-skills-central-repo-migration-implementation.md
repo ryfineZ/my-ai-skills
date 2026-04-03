@@ -1,5 +1,9 @@
 # Skills 中央仓库改造实施计划
 
+> 状态：已过时，已被 `2026-04-03-skills-central-three-layer-migration.md` 取代。
+>
+> 说明：本计划基于旧模型编写，默认假设 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 同时承担源码仓库与运行时消费层职责；当前已确认的新目标架构为“源码管理层 `skills-central` + 运行时消费层 `~/.agents/skills` + 客户端入口层”三层模型，因此本文件仅保留作历史记录，不再作为实施依据。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 将中央仓库从“第三方源码目录 + bundle 清单 + 软链接发布”迁移到“扁平 skill 实体 + `.skill-source.json` 统一来源真相 + 按平台差异化发布”的目标架构。

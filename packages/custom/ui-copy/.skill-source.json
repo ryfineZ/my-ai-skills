@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "优化界面文案，去掉 AI 味、自解释和无效标题。",
+  "trigger_keywords": [
+    "UI 文案",
+    "去AI味",
+    "按钮文案",
+    "标题精简",
+    "界面文案优化",
+    "使用者视角"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

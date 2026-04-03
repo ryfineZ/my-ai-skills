@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "细化按钮、表单和状态切换的交互反馈设计。",
+  "trigger_keywords": [
+    "交互反馈",
+    "按钮状态",
+    "loading",
+    "error",
+    "empty state",
+    "状态矩阵"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

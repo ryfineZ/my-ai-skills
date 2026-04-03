@@ -1,0 +1,137 @@
+{
+  "tooling": {
+    "label": "Tooling",
+    "aliases": ["tooling", "tool", "developer-tool"],
+    "summary": "专业、克制、稳定、耐看，优先效率和层级。",
+    "hidden_constraints": [
+      "不要把工具界面做成营销页或大展示页。",
+      "减少装饰层，优先状态、列表、主操作。",
+      "按钮数量要收敛，同层只保留必要动作。"
+    ],
+    "reference_query": "tooling interface structured productivity",
+    "review_focus": ["层级", "效率", "按钮收敛"]
+  },
+  "editorial": {
+    "label": "Editorial",
+    "aliases": ["editorial", "content-first", "reading"],
+    "summary": "留白、排版、内容权重、秩序感优先。",
+    "hidden_constraints": [
+      "不要用冗余标题和分组标题打碎阅读节奏。",
+      "对比和字号要服务内容层级，不靠花哨装饰制造气质。",
+      "说明文字只保留必要信息，不要空话。"
+    ],
+    "reference_query": "editorial interface typography layout content hierarchy",
+    "review_focus": ["排版", "留白", "文案"]
+  },
+  "data-panel": {
+    "label": "Data Panel",
+    "aliases": ["data-panel", "dashboard", "monitoring"],
+    "summary": "信息层级、状态对比、节奏和数据可读性优先。",
+    "hidden_constraints": [
+      "不要平均切豆腐块，重要数据必须更近、更亮、更大。",
+      "不要让装饰和材质压过指标与状态。",
+      "数据区字体和数字对齐必须稳定、清楚。"
+    ],
+    "reference_query": "data dashboard hierarchy monitoring panel",
+    "review_focus": ["信息密度", "状态感", "可读性"]
+  },
+  "brand-display": {
+    "label": "Brand Display",
+    "aliases": ["brand-display", "brand", "marketing"],
+    "summary": "强调视觉记忆点、品牌气质和克制动效。",
+    "hidden_constraints": [
+      "不要为了品牌感牺牲主任务和可读性。",
+      "大标题必须有信息价值，不能只是造势。",
+      "动效只用于聚焦和引导，不要一屏多段抢戏。"
+    ],
+    "reference_query": "brand showcase landing restrained motion",
+    "review_focus": ["记忆点", "主任务", "动效克制"]
+  },
+  "calm-utility": {
+    "label": "Calm Utility",
+    "aliases": ["calm-utility", "calm", "quiet-tool"],
+    "summary": "平静、耐看、低噪音，适合长期使用的工具界面。",
+    "hidden_constraints": [
+      "不要为了安静感把对比度压得太低。",
+      "不要用大面积空白冒充高级感。",
+      "结构要稳，反馈要清楚，不要假冷淡。"
+    ],
+    "reference_query": "calm utility interface restrained durable",
+    "review_focus": ["舒适度", "对比度", "稳定感"]
+  },
+  "focused-utility": {
+    "label": "Focused Utility",
+    "aliases": ["focused-utility", "focused", "compact-tooling"],
+    "summary": "紧凑、直接、目标明确，适合 popup、小面板和高频操作。",
+    "hidden_constraints": [
+      "控件尺寸要贴合内容，不要把搜索框和按钮做得过大。",
+      "首屏只保留当前状态、主任务、主按钮。",
+      "不要叠多层卡片和外框。"
+    ],
+    "reference_query": "compact utility popup focused task",
+    "review_focus": ["空间利用", "主任务", "按钮反馈"]
+  },
+  "native-utility": {
+    "label": "Native Utility",
+    "aliases": ["native-utility", "native", "light-tool"],
+    "summary": "原生感、轻量、直接，优先贴合宿主平台。",
+    "hidden_constraints": [
+      "不要硬套网页工具风和重质感。",
+      "首屏优先完成任务，不优先展示风格。",
+      "交互反馈要清楚，但不要厚动效。"
+    ],
+    "reference_query": "native utility mobile mini program simple",
+    "review_focus": ["原生感", "轻量", "任务完成率"]
+  },
+  "tahoe-glass": {
+    "label": "Tahoe Glass",
+    "aliases": ["tahoe-glass", "tahoe", "liquid-glass"],
+    "summary": "液态玻璃、通透、晶莹、柔和反射，但主内容永远最清晰。",
+    "hidden_constraints": [
+      "玻璃只用于承载层、导航层、浮层，不要整屏全玻璃。",
+      "不要回到蓝紫玻璃、银灰、雾绿这些安全模板色。",
+      "窗壳和材质不能比主内容更抢眼。",
+      "不要用重模糊掩盖结构问题。"
+    ],
+    "reference_query": "liquid glass layered desktop settings refined",
+    "review_focus": ["材质边界", "可读性", "分层"]
+  },
+  "liquid-glass-cyber-dark": {
+    "label": "Liquid Glass Cyber Dark",
+    "aliases": [
+      "liquid-glass-cyber-dark",
+      "cyber-dark",
+      "dark-mysterious-cyber",
+      "液态玻璃赛博暗黑",
+      "液态玻璃 赛博朋克 暗黑神秘",
+      "液态玻璃 赛博 朋克 暗黑 神秘",
+      "赛博朋克 暗黑神秘",
+      "暗黑神秘赛博"
+    ],
+    "summary": "液态玻璃 + 赛博朋克 + 暗黑神秘系，但避免蓝紫霓虹模板味。",
+    "hidden_constraints": [
+      "不要蓝紫霓虹，不要银灰，不要雾绿。",
+      "玻璃只用于承载层和分层，不要满屏糊玻璃。",
+      "神秘感靠层级、光感和留白，不靠低对比度小字。",
+      "字体、状态和主按钮必须比材质更清晰。",
+      "优先用带性格的显示字体配合清晰正文，不要退回普通系统字一把梭。",
+      "要有 SVG 标记、图形锚点或信号图，不要满屏都是文字。",
+      "几何应该更硬、更锋利，避免过圆的卡片和按钮。",
+      "动效要在真实预览里可感，但不要影响可读性。"
+    ],
+    "reference_query": "dark mysterious cyberpunk liquid glass interface",
+    "review_focus": ["模板味", "对比度", "材质节制", "字形气质", "几何锋利度", "图形锚点"]
+  },
+  "dark-editorial": {
+    "label": "Dark Editorial",
+    "aliases": ["dark-editorial", "editorial-dark", "dark-reading"],
+    "summary": "暗色内容型界面，强调文字层级、版式和沉浸感。",
+    "hidden_constraints": [
+      "暗色不等于低对比度，正文和小字必须稳。",
+      "不要用多层边框和霓虹高光破坏版式。",
+      "主标题、正文、注释三层关系必须清楚。"
+    ],
+    "reference_query": "dark editorial interface typography hierarchy",
+    "review_focus": ["文字层级", "暗色对比", "节奏"]
+  }
+}

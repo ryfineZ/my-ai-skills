@@ -40,7 +40,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+
+find_repo_root() {
+    local current="$1"
+    while [[ "$current" != "/" ]]; do
+        if [[ -d "$current/shared/scripts" ]] && [[ -d "$current/packages" ]]; then
+            printf '%s\n' "$current"
+            return 0
+        fi
+        current="$(dirname "$current")"
+    done
+    return 1
+}
+
 SKILLS_DIR="${SKILLS_DIR:-$HOME/.agents/skills}"
+if [[ -n "${SOURCE_SKILLS_DIR:-}" ]]; then
+    SOURCE_SKILLS_DIR="$SOURCE_SKILLS_DIR"
+else
+    SOURCE_SKILLS_DIR="$(find_repo_root "$SCRIPT_DIR" || true)"
+fi
 AGENTS_SKILLS_DIR="$HOME/.agents/skills"
 AGENTS_SKILLS_REAL=""
 ERROR_COUNT=0
@@ -59,24 +78,36 @@ resolve_dir() {
     (cd "$dir" 2>/dev/null && pwd -P)
 }
 
+tool_dir_platform_key() {
+    local tool_dir="$1"
+    local tool_name=""
+
+    tool_name="$(basename "$(dirname "$tool_dir")")"
+    tool_name="${tool_name#.}"
+    if [[ "$tool_dir" == "$HOME/.claude/skills" ]]; then
+        printf 'claude_code\n'
+        return 0
+    fi
+    printf '%s\n' "$tool_name"
+}
+
 should_expect_tool_link() {
     local skill_dir="$1"
     local tool_dir="$2"
     local meta_file="$skill_dir/.skill-source.json"
-
-    if [[ "$tool_dir" != "$HOME/.claude/skills" ]]; then
-        return 0
-    fi
+    local platform_key=""
 
     if [[ ! -f "$meta_file" ]]; then
         return 0
     fi
 
-    python3 - "$meta_file" <<'PY'
+    platform_key="$(tool_dir_platform_key "$tool_dir")"
+
+    python3 - "$meta_file" "$platform_key" <<'PY'
 import json
 import sys
 
-path = sys.argv[1]
+path, platform_key = sys.argv[1:3]
 try:
     data = json.load(open(path, "r", encoding="utf-8"))
 except Exception:
@@ -85,11 +116,11 @@ except Exception:
 policies = data.get("platform_policies") or {}
 if not isinstance(policies, dict):
     raise SystemExit(0)
-claude = policies.get("claude_code") or {}
-if not isinstance(claude, dict):
+platform = policies.get(platform_key) or {}
+if not isinstance(platform, dict):
     raise SystemExit(0)
 
-publish = claude.get("publish")
+publish = platform.get("publish")
 if publish is False:
     raise SystemExit(1)
 PY
@@ -97,6 +128,15 @@ PY
 
 discover_skill_files() {
     local entry=""
+    if [[ -n "$SOURCE_SKILLS_DIR" && -d "$SOURCE_SKILLS_DIR/packages" ]]; then
+        while IFS= read -r entry; do
+            [[ -n "$entry" ]] || continue
+            [[ -f "$entry" ]] || continue
+            printf '%s\n' "$entry"
+        done < <(find "$SOURCE_SKILLS_DIR/packages" -type f -name SKILL.md | sort)
+        return 0
+    fi
+
     while IFS= read -r entry; do
         [[ -n "$entry" ]] || continue
         [[ -e "$entry" ]] || continue
@@ -207,7 +247,7 @@ error_issue() {
 }
 
 emit_json() {
-    python3 - "$ISSUES_FILE" "$SKILLS_DIR" "$AGENTS_SKILLS_DIR" "$SKILL_COUNT" "$ERROR_COUNT" "$WARNING_COUNT" <<'PY'
+    python3 - "$ISSUES_FILE" "$SKILLS_DIR" "$AGENTS_SKILLS_DIR" "$SOURCE_SKILLS_DIR" "$SKILL_COUNT" "$ERROR_COUNT" "$WARNING_COUNT" <<'PY'
 import datetime as dt
 import json
 import sys
@@ -216,9 +256,10 @@ from pathlib import Path
 issues_file = Path(sys.argv[1])
 skills_dir = sys.argv[2]
 agents_skills_dir = sys.argv[3]
-skill_count = int(sys.argv[4])
-error_count = int(sys.argv[5])
-warning_count = int(sys.argv[6])
+source_skills_dir = sys.argv[4]
+skill_count = int(sys.argv[5])
+error_count = int(sys.argv[6])
+warning_count = int(sys.argv[7])
 
 issues = []
 if issues_file.exists():
@@ -249,6 +290,7 @@ out = {
     "status": status,
     "skills_dir": skills_dir,
     "agents_skills_dir": agents_skills_dir,
+    "source_skills_dir": source_skills_dir or None,
     "skills_count": skill_count,
     "counts": {"errors": error_count, "warnings": warning_count},
     "issues": issues,
@@ -296,6 +338,21 @@ if [[ -d "$SKILLS_DIR" ]]; then
     fi
 else
     error_issue "missing_skills_dir" "$SKILLS_DIR" "中央仓库不存在: $SKILLS_DIR"
+fi
+
+if [[ -n "$SOURCE_SKILLS_DIR" ]]; then
+    log ""
+    log "🧭 源码层状态："
+    if [[ -d "$SOURCE_SKILLS_DIR" ]]; then
+        configured_source_skills_dir="$SOURCE_SKILLS_DIR"
+        SOURCE_SKILLS_DIR="$(resolve_dir "$SOURCE_SKILLS_DIR")"
+        log "✅ Source Skills 目录: $SOURCE_SKILLS_DIR"
+        if [[ "$configured_source_skills_dir" != "$SOURCE_SKILLS_DIR" ]]; then
+            log "   (配置路径: $configured_source_skills_dir)"
+        fi
+    else
+        error_issue "missing_source_skills_dir" "$SOURCE_SKILLS_DIR" "Source Skills 目录不存在: $SOURCE_SKILLS_DIR"
+    fi
 fi
 
 SKILL_FILES=()

@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "补充小程序界面的信息密度和平台化设计规则。",
+  "trigger_keywords": [
+    "小程序 UI",
+    "微信小程序",
+    "平台密度",
+    "原生感",
+    "小程序交互",
+    "轻量界面"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

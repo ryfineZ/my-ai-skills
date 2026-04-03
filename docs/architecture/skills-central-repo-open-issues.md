@@ -39,7 +39,7 @@
 
 - 状态：已解决
 - 影响范围：所有已安装 skill
-- 现状：已新增 [`uninstall-skill`](/Users/zhangyufan/.agents/skills/uninstall-skill/SKILL.md)，支持按 skill / update_group 删除并自动刷新平台链接与列表
+- 现状：已新增 [`uninstall-skill`](/Users/zhangyufan/Workspace/skills-central/packages/core/uninstall-skill/SKILL.md)，支持按 skill / update_group 删除并自动刷新平台链接与列表
 - 风险：无
 - 建议：后续仅继续补充更多回归测试
 
@@ -47,7 +47,7 @@
 
 - 状态：已解决
 - 影响范围：仓库维护和故障排查
-- 现状：已新增 [`doctor-skills`](/Users/zhangyufan/.agents/skills/doctor-skills/SKILL.md)，可组合 `verify.sh` 与元数据检查，并支持轻量修复
+- 现状：已新增 [`doctor-skills`](/Users/zhangyufan/Workspace/skills-central/packages/core/doctor-skills/SKILL.md)，可组合 `verify.sh` 与元数据检查，并支持轻量修复
 - 风险：无
 - 建议：后续按需补充更细粒度自动修复
 
@@ -79,7 +79,7 @@
 
 - 状态：已解决
 - 影响范围：Claude Code 用户体验、插件推荐包安装流程
-- 现状：Claude 插件信息已自动落地到 [`claude-plugin-recommendations.md`](/Users/zhangyufan/.agents/skills/docs/architecture/claude-plugin-recommendations.md)，并且全局安装时会在可用环境中自动执行插件市场添加与插件安装 / 启用
+- 现状：Claude 插件信息已自动落地到 [`claude-plugin-recommendations.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/claude-plugin-recommendations.md)，并且全局安装时会在可用环境中自动执行插件市场添加与插件安装 / 启用
 - 风险：若上游仓库文档中的插件市场或安装命令变化，自动提取逻辑需要继续回归验证
 - 建议：后续新包接入时，同时验证元数据中的 `plugin_marketplace` / `plugin_marketplace_source`
 

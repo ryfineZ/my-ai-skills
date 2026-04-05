@@ -1,77 +1,120 @@
 # Skills 中央仓库改造需求
 
 > 状态：已确认  
-> 最后更新：2026-03-28
+> 最后更新：2026-04-03
 
 ## 背景
 
-当前中央仓库同时承担了 skills 发布根、第三方 bundle 接入点、多平台同步源等职责，但第三方 bundle 仍依赖额外清单和源码目录，Claude Code 又存在插件安装这一类平台特例，导致来源追踪、更新、平台发布策略还不统一。
+当前仓库把源码管理、运行时消费、客户端入口三件事放在了同一层目录里：
 
-本次改造的目标，是把中央仓库收敛为一套可长期维护的技能分发系统，并把需求、设计、遗留问题和更新记录正式沉淀下来。
+- [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 同时是 Git 仓库、安装落地点和客户端消费根
+- 第三方 bundle 被强制扁平化后再进入中央仓库
+- 文档、脚本、基础 skills 与业务 / 社区 skills 混在同一层
+
+这套模型虽然能工作，但随着 bundle 增多、基础 skills 增多，以及 `Codex` / `Claude Code` 的发现逻辑差异越来越明显，已经不利于长期维护。
+
+本次改造的目标，是把中央技能系统拆成“源码管理层 + 运行时消费层 + 客户端入口层”三层结构，同时保留现有 skill 的名字和元数据模型，不新增额外命名机制。
 
 ## 核心目标
 
-1. 中央仓库继续以 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 作为唯一权威目录和唯一发布根。
-2. 第三方 skill 安装后以顶层扁平目录形式落地，每个 skill 都是完整真实目录，不依赖长期保留的第三方源码缓存目录。
-3. 每个已安装 skill 都有可机器读取的来源元数据，作为安装、更新、发布的唯一来源真相。
-4. 多平台发布逻辑统一由中央仓库驱动，但允许按平台应用差异化策略。
-5. 对官方明确建议通过 Claude Code 插件安装的 skill 包，中央仓库必须支持：
-   - 自动排除发布到 `~/.claude/skills`
-   - 给出明确提示，说明应通过插件安装
-6. 中央仓库改造过程要有正式文档记录，包含需求、设计、遗留问题、更新记录。
+1. 新的源码管理仓库固定为 [`~/Workspace/skills-central`](/Users/zhangyufan/Workspace/skills-central)。
+2. [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 改为独立的运行时消费层，不再是源码仓库本体。
+3. 源码层保留技能包原样，不再把 bundle 强制扁平化后作为真实存储结构。
+4. 客户端继续统一消费扁平目录，以兼容 `Claude Code`、`Codex` 等不同发现逻辑。
+5. 每个 skill 继续使用自己的目录名作为运行时导出名，不引入 `export_name`、alias 或额外命名规则。
+6. 每个已安装 skill 继续使用 `.skill-source.json` 作为来源真相。
+7. 文档、脚本、基础 skills 与其他 skills 按目录职责分层存放。
+8. 架构改造完成后，相关全局规则文件要同步更新。
 
 ## 非目标
 
-1. 不追求所有平台都使用完全相同的安装形态。
-2. 不要求中央仓库复刻 Claude Code 插件的全部能力。
-3. 不在本次改造中优先解决所有历史 skill 的质量问题或文案问题。
-4. 不把 README 变成架构设计文档；README 只保留入口和关键注意事项。
+1. 不让客户端直接消费源码层中的包结构。
+2. 不新增 `registry/`、别名、导出名映射等机制。
+3. 不在本次改造中额外引入新的 skill 命名规则。
+4. 不要求所有平台都支持相同的内部存储结构。
+5. 不把 README 变成完整架构设计文档。
+
+## 结构性需求
+
+### 源码管理层
+
+1. 源码管理仓库使用 [`~/Workspace/skills-central`](/Users/zhangyufan/Workspace/skills-central)。
+2. 仓库内部至少拆分为：
+   - `docs/`
+   - `scripts/`
+   - `shared/`
+   - `packages/`
+3. `packages/` 至少支持：
+   - `core/`
+   - `custom/`
+   - `community/`
+4. 第三方 bundle 在源码层中应尽量保持原样存放。
+
+### 运行时消费层
+
+1. [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 是独立目录，不是源码仓库软链接。
+2. 运行时消费层中的每个 skill 条目都应指向源码层中的真实 skill 目录。
+3. 运行时消费层必须保持扁平目录结构。
+
+### 客户端入口层
+
+1. 各客户端继续从扁平运行时层消费 skills。
+2. `~/.claude/skills`、`~/.codex/skills`、`~/.cursor/skills` 等目录继续作为入口层存在。
+3. 客户端入口层不承担源码管理职责。
 
 ## 功能性需求
+
+### 创建
+
+1. `create-skill` 默认在源码管理层中创建新 skill。
+2. 创建后必须刷新运行时消费层和客户端入口层。
+3. 如果目录名会导致运行时扁平层冲突，必须在创建阶段就报错。
 
 ### 安装
 
 1. 支持安装单 skill 仓库。
 2. 支持安装 bundle 仓库。
-3. 安装 bundle 时，按 skill 目录完整复制到中央仓库顶层。
+3. 安装结果应进入源码管理层，而不是直接写入运行时消费层。
 4. 安装后为每个 skill 写入 `.skill-source.json`。
+5. 安装完成后必须刷新运行时消费层和客户端入口层。
 
 ### 更新
 
-1. 必须新增独立的 `update-skill` 能力。
-2. 更新必须基于已安装 skill 的 `.skill-source.json`。
+1. `update-skill` 继续保留独立入口。
+2. 更新必须基于源码层 skill 的 `.skill-source.json`。
 3. 对同一 bundle 来源，更新时应按来源聚合，只拉取一次远端仓库。
-4. 更新时应支持：
-   - 刷新已安装 skill
-   - 识别并补装 bundle 新增 skill
-   - 识别 bundle 删除的 skill，并给出记录或处理
+4. 更新完成后必须刷新运行时消费层和客户端入口层。
+5. 如果更新后会产生扁平目录名冲突，必须在更新阶段报错。
 
 ### 卸载
 
-1. 应补充独立的 `uninstall-skill` 能力。
-2. 卸载时应清理：
-   - skill 目录
-   - 平台发布链接
-   - 相关提示与索引记录
+1. `uninstall-skill` 继续保留独立入口。
+2. 卸载的真实对象应是源码层 skill 或整包。
+3. 卸载完成后必须刷新运行时消费层和客户端入口层。
 
 ### 发布
 
-1. 平台发布应从中央仓库顶层 skill 出发。
-2. 发布规则必须支持按平台过滤。
-3. Claude Code 必须支持“推荐插件安装”的排除策略。
+1. 发布应拆成两段：
+   - 源码层导出到运行时消费层
+   - 运行时消费层同步到各客户端入口层
+2. 运行时消费层的导出名继续沿用 skill 目录名。
+3. 不允许在发布阶段引入改名逻辑。
+4. 发布阶段必须支持按平台过滤。
 
 ### 验证/修复
 
-1. 当前 `verify.sh` 保留。
-2. 后续应补充 `doctor-skills` 或同类能力，用于诊断和修复：
-   - 缺失或损坏的 `.skill-source.json`
-   - 过期平台链接
-   - 平台策略不一致
-   - Claude 插件推荐与实际发布不一致
+1. 当前 `verify.sh` 保留，但要覆盖源码层、运行时层、客户端层三段校验。
+2. `doctor-skills` 后续应基于三层结构做诊断。
+
+## 冲突需求
+
+1. 同名冲突按硬错误处理。
+2. 同名冲突必须优先在 `create-skill`、`install-skill`、`update-skill` 阶段发现。
+3. 导出阶段只做兜底校验，不负责自动改名或兼容处理。
 
 ## 元数据需求
 
-`.skill-source.json` 需要覆盖至少这些信息：
+`.skill-source.json` 继续覆盖至少这些信息：
 
 - `source`
 - `source_type`
@@ -95,33 +138,28 @@
 
 ## Claude Code 专项需求
 
-1. 如果某个 skill 包官方建议通过 Claude 插件安装，则中央仓库不得再把其同名 skill 发布到 `~/.claude/skills`。
-2. 发布时必须给出明确提示，避免用户误以为同步失败。
-3. 提示信息不仅要打印到终端，也应写入仓库内的可追踪文档。
+1. `Claude Code` 的普通 `/skills/` 目录继续按一层 `skill-name/SKILL.md` 兼容。
+2. 如果某个 skill 包官方建议通过 Claude 插件安装，则中央仓库不得再把其同名 skill 发布到 `~/.claude/skills`。
+3. 相关提示既要打印到终端，也要写入仓库文档。
 
-## 文档需求
+## 文档与规则需求
 
-中央仓库改造至少要有这些文档：
-
-1. 需求文档
-2. 设计文档
-3. 遗留问题文档
-4. 更新记录文档
-
-README 还必须单独强调：
-
-1. Claude Code 同时支持 standalone skills 和 plugins
-2. 某些官方 skill 包不应同步到 `~/.claude/skills`
-3. 这不是报错，而是平台策略
+1. 至少保留：需求、设计、遗留问题、更新记录四类架构文档。
+2. README 需要明确说明：
+   - `skills-central` 是源码管理仓库
+   - `~/.agents/skills` 是运行时消费层
+   - 客户端默认只消费运行时层
+3. 现有全局规则中关于“中央仓库默认是 `~/.agents/skills`”的描述，需要在架构落地后同步更新。
 
 ## 验收标准
 
 满足以下条件即可认为改造完成：
 
-1. 中央仓库不再依赖长期保留的第三方源码缓存目录。
-2. 第三方 skill 的来源真相统一到 `.skill-source.json`。
-3. `install-skill` 支持扁平化安装。
-4. `update-skill` 可用。
-5. Claude Code 的插件推荐包不会被重复发布到 `~/.claude/skills`。
-6. README 和架构文档都已更新。
-7. 相关验证脚本可证明平台发布结果与策略一致。
+1. 源码管理仓库已迁移为 [`~/Workspace/skills-central`](/Users/zhangyufan/Workspace/skills-central)。
+2. [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 已成为独立运行时消费层。
+3. 源码层中的 bundle 以原样结构存放，不再以扁平目录作为真实存储结构。
+4. 运行时消费层能稳定导出为扁平目录。
+5. `create-skill`、`install-skill`、`update-skill`、`uninstall-skill` 都能基于新三层结构工作。
+6. 同名冲突可在创建 / 安装 / 更新阶段被发现。
+7. `Claude Code` 的插件推荐包不会被重复发布到 `~/.claude/skills`。
+8. README 和架构主文档已更新到新模型。

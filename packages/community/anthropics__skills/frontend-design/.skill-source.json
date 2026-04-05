@@ -1,0 +1,20 @@
+{
+  "source": "community",
+  "source_repo": "anthropics/skills",
+  "updated_at": "2026-01-26T13:53:49Z",
+  "source_type": "single",
+  "package_name": "skills",
+  "install_mode": "flattened-copy",
+  "update_group": "anthropics/skills",
+  "source_path": "frontend-design",
+  "platform_policies": {
+    "claude_code": {
+      "publish": false,
+      "install": "plugin",
+      "plugin_name": "example-skills",
+      "install_hint": "/plugin install example-skills@anthropic-agent-skills",
+      "plugin_marketplace": "anthropic-agent-skills",
+      "plugin_marketplace_source": "anthropics/skills"
+    }
+  }
+}

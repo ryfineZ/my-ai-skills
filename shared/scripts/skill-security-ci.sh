@@ -121,6 +121,9 @@ esac
 
 SCANNER="$REPO_ROOT/skill-security-guard/scripts/skill_security_guard.py"
 if [[ ! -f "$SCANNER" ]]; then
+    SCANNER="$REPO_ROOT/packages/core/skill-security-guard/scripts/skill_security_guard.py"
+fi
+if [[ ! -f "$SCANNER" ]]; then
     echo -e "${RED}❌ 未找到扫描器: $SCANNER${NC}"
     exit 2
 fi
@@ -128,14 +131,25 @@ fi
 mkdir -p "$OUTPUT_DIR/json"
 
 SKILL_DIRS=()
+SEARCH_ROOT="$REPO_ROOT"
+if [[ -d "$REPO_ROOT/packages" ]]; then
+    SEARCH_ROOT="$REPO_ROOT/packages"
+fi
+
+discover_all_skills() {
+    find "$SEARCH_ROOT" -type f -name SKILL.md | while IFS= read -r skill_md; do
+        [[ -n "$skill_md" ]] || continue
+        dirname "$skill_md"
+    done
+}
 
 if [[ -n "$SKILLS_CSV" ]]; then
     IFS=',' read -r -a INPUT_SKILLS <<< "$SKILLS_CSV"
     for raw in "${INPUT_SKILLS[@]}"; do
         skill_name="$(echo "$raw" | xargs)"
         [[ -z "$skill_name" ]] && continue
-        candidate="$REPO_ROOT/$skill_name"
-        if [[ ! -d "$candidate" || ! -f "$candidate/SKILL.md" ]]; then
+        candidate="$(find "$SEARCH_ROOT" -type f -name SKILL.md -path "*/$skill_name/SKILL.md" | head -n 1 | xargs dirname 2>/dev/null || true)"
+        if [[ -z "$candidate" || ! -d "$candidate" || ! -f "$candidate/SKILL.md" ]]; then
             echo -e "${RED}❌ 指定 skill 不存在或缺少 SKILL.md: $skill_name${NC}"
             exit 2
         fi
@@ -145,26 +159,24 @@ if [[ -n "$SKILLS_CSV" ]]; then
     done
 else
     if [[ "$SCOPE" == "all" ]]; then
-        for dir in "$REPO_ROOT"/*; do
-            [[ ! -d "$dir" ]] && continue
-            [[ -f "$dir/SKILL.md" ]] || continue
+        while IFS= read -r dir; do
+            [[ -n "$dir" ]] || continue
             if ! contains_item "$dir" "${SKILL_DIRS[@]-}"; then
                 SKILL_DIRS+=("$dir")
             fi
-        done
+        done < <(discover_all_skills)
     else
         if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
             CHANGED_FILES=""
             if ! CHANGED_FILES="$(git -C "$REPO_ROOT" diff --name-only "$BASE_REF" "$HEAD_REF" 2>/dev/null)"; then
                 echo -e "${YELLOW}⚠️ 无法比较 $BASE_REF..$HEAD_REF，回退为全量扫描${NC}"
                 SCOPE="all"
-                for dir in "$REPO_ROOT"/*; do
-                    [[ ! -d "$dir" ]] && continue
-                    [[ -f "$dir/SKILL.md" ]] || continue
+                while IFS= read -r dir; do
+                    [[ -n "$dir" ]] || continue
                     if ! contains_item "$dir" "${SKILL_DIRS[@]-}"; then
                         SKILL_DIRS+=("$dir")
                     fi
-                done
+                done < <(discover_all_skills)
             fi
 
             if [[ -z "${CHANGED_FILES:-}" ]]; then
@@ -172,25 +184,27 @@ else
             else
                 while IFS= read -r rel; do
                     [[ -z "$rel" ]] && continue
-                    top="${rel%%/*}"
-                    [[ -z "$top" ]] && continue
-                    candidate="$REPO_ROOT/$top"
-                    if [[ -d "$candidate" && -f "$candidate/SKILL.md" ]]; then
-                        if ! contains_item "$candidate" "${SKILL_DIRS[@]-}"; then
-                            SKILL_DIRS+=("$candidate")
+                    abs="$REPO_ROOT/$rel"
+                    current="$abs"
+                    while [[ "$current" != "$REPO_ROOT" && "$current" != "/" ]]; do
+                        if [[ -f "$current/SKILL.md" ]]; then
+                            if ! contains_item "$current" "${SKILL_DIRS[@]-}"; then
+                                SKILL_DIRS+=("$current")
+                            fi
+                            break
                         fi
+                        current="$(dirname "$current")"
                     fi
                 done <<< "$CHANGED_FILES"
             fi
         else
             echo -e "${YELLOW}⚠️ 当前目录不是 git 仓库，回退为全量扫描${NC}"
-            for dir in "$REPO_ROOT"/*; do
-                [[ ! -d "$dir" ]] && continue
-                [[ -f "$dir/SKILL.md" ]] || continue
+            while IFS= read -r dir; do
+                [[ -n "$dir" ]] || continue
                 if ! contains_item "$dir" "${SKILL_DIRS[@]-}"; then
                     SKILL_DIRS+=("$dir")
                 fi
-            done
+            done < <(discover_all_skills)
         fi
     fi
 fi

@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "维护 ui-polish 共享参考资料、脚本与模板资产。",
+  "trigger_keywords": [
+    "UI 资产",
+    "共享参考",
+    "模板来源",
+    "交互预设",
+    "风格预设",
+    "UI 脚本"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

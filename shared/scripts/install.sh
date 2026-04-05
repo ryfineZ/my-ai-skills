@@ -4,15 +4,11 @@
 set -euo pipefail
 
 SKILLS_DIR="${SKILLS_DIR:-$HOME/.agents/skills}"
+SOURCE_SKILLS_DIR="${SOURCE_SKILLS_DIR:-}"
 AGENTS_SKILLS_DIR="$HOME/.agents/skills"
 BACKUP_DIR=""
 CLEANED_STALE_COUNT=0
 CLAUDE_PLUGIN_DOC_SCRIPT=""
-
-# 加载中央配置文件（如果存在）
-if [ -f "$SKILLS_DIR/.skillsrc" ]; then
-    source "$SKILLS_DIR/.skillsrc"
-fi
 
 resolve_dir() {
     local dir="$1"
@@ -21,12 +17,30 @@ resolve_dir() {
 
 discover_skill_files() {
     local entry=""
+    if [[ -d "$SOURCE_SKILLS_DIR/packages" ]]; then
+        while IFS= read -r entry; do
+            [[ -n "$entry" ]] || continue
+            [[ -f "$entry" ]] || continue
+            printf '%s\n' "$entry"
+        done < <(find "$SOURCE_SKILLS_DIR/packages" -type f -name SKILL.md | sort)
+        return 0
+    fi
+
+    if [[ "$SOURCE_SKILLS_DIR" == "$SKILLS_DIR" ]]; then
+        while IFS= read -r entry; do
+            [[ -n "$entry" ]] || continue
+            [[ -e "$entry" ]] || continue
+            [[ -f "$entry/SKILL.md" ]] || continue
+            printf '%s\n' "$entry/SKILL.md"
+        done < <(find "$SOURCE_SKILLS_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+        return 0
+    fi
+
     while IFS= read -r entry; do
         [[ -n "$entry" ]] || continue
-        [[ -e "$entry" ]] || continue
-        [[ -f "$entry/SKILL.md" ]] || continue
-        printf '%s\n' "$entry/SKILL.md"
-    done < <(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+        [[ -f "$entry" ]] || continue
+        printf '%s\n' "$entry"
+    done < <(find "$SOURCE_SKILLS_DIR" -type f -name SKILL.md | sort)
 }
 
 extract_skill_name() {
@@ -139,6 +153,10 @@ is_managed_symlink() {
     local link_path="$1"
     local target=""
     local resolved=""
+
+    if [[ "$(dirname "$link_path")" == "$AGENTS_SKILLS_DIR" ]]; then
+        return 0
+    fi
 
     target="$(readlink "$link_path" 2>/dev/null || true)"
     if [[ "$target" == "$AGENTS_SKILLS_DIR/"* ]] || [[ "$target" == *".agents/skills/"* ]]; then
@@ -267,17 +285,50 @@ tool_dir_platform_key() {
 
 echo "🚀 开始配置 AI Skills..."
 echo "Skills 目录: $SKILLS_DIR"
+echo "Source Skills 目录: $SOURCE_SKILLS_DIR"
 echo ""
 
 if [ ! -d "$SKILLS_DIR" ]; then
-    echo "❌ 中央仓库不存在: $SKILLS_DIR"
-    exit 1
+    if [[ "$SKILLS_DIR" != "$SOURCE_SKILLS_DIR" ]]; then
+        mkdir -p "$SKILLS_DIR"
+    else
+        echo "❌ 中央仓库不存在: $SKILLS_DIR"
+        exit 1
+    fi
 fi
 
 SKILLS_DIR="$(resolve_dir "$SKILLS_DIR")"
 if [ -z "$SKILLS_DIR" ]; then
     echo "❌ 无法解析中央仓库路径"
     exit 1
+fi
+
+if [[ -z "$SOURCE_SKILLS_DIR" ]]; then
+    if [[ -d "$(cd "$(dirname "$0")/../.." && pwd -P)/packages" ]]; then
+        SOURCE_SKILLS_DIR="$(cd "$(dirname "$0")/../.." && pwd -P)"
+    else
+        SOURCE_SKILLS_DIR="$SKILLS_DIR"
+    fi
+fi
+
+if [ ! -d "$SOURCE_SKILLS_DIR" ]; then
+    echo "❌ Source Skills 目录不存在: $SOURCE_SKILLS_DIR"
+    exit 1
+fi
+
+SOURCE_SKILLS_DIR="$(resolve_dir "$SOURCE_SKILLS_DIR")"
+if [ -z "$SOURCE_SKILLS_DIR" ]; then
+    echo "❌ 无法解析 Source Skills 路径"
+    exit 1
+fi
+
+# 加载中央配置文件（如果存在）
+if [ -f "$SOURCE_SKILLS_DIR/.skillsrc" ]; then
+    # shellcheck disable=SC1090
+    source "$SOURCE_SKILLS_DIR/.skillsrc"
+elif [ -f "$SKILLS_DIR/.skillsrc" ]; then
+    # shellcheck disable=SC1090
+    source "$SKILLS_DIR/.skillsrc"
 fi
 
 # 1) 确保 ~/.agents/skills 为真实目录（不是软链接）
@@ -292,9 +343,9 @@ else
     mkdir -p "$AGENTS_SKILLS_DIR"
 fi
 
-# 2) 扫描中央仓库并为 ~/.agents/skills 创建每个 skill 的软链接
+# 2) 扫描源码层 / 中央仓库，先做重名校验
 skill_names=()
-duplicate_count=0
+skill_dirs=()
 while IFS= read -r skill_md; do
     if [ -z "$skill_md" ]; then
         continue
@@ -303,22 +354,27 @@ while IFS= read -r skill_md; do
     skill_name="$(extract_skill_name "$skill_md" "$(basename "$skill_dir")")"
 
     if contains_skill "$skill_name" "${skill_names[@]-}"; then
-        duplicate_count=$((duplicate_count + 1))
-        echo "⚠️  跳过重复 skill 名称: $skill_name ($skill_dir)"
-        continue
+        echo "❌ 发现重复 skill 名称: $skill_name ($skill_dir)"
+        echo "   导出已停止，请先解决源码层重名冲突"
+        exit 1
     fi
 
     skill_names+=("$skill_name")
-
-    safe_link "$skill_dir" "$AGENTS_SKILLS_DIR/$skill_name" "agents-$skill_name"
+    skill_dirs+=("$skill_dir")
 done < <(discover_skill_files)
 
 if [ "${#skill_names[@]}" -eq 0 ]; then
-    echo "⚠️  未发现任何 SKILL.md，跳过软链接创建"
-    exit 0
+    echo "⚠️  未发现任何 SKILL.md，将执行过期链接清理"
+else
+    # 2.1) 根据校验后的 skill 集合重建 ~/.agents/skills
+    for i in "${!skill_names[@]}"; do
+        skill_name="${skill_names[$i]}"
+        skill_dir="${skill_dirs[$i]}"
+        safe_link "$skill_dir" "$AGENTS_SKILLS_DIR/$skill_name" "agents-$skill_name"
+    done
 fi
 
-# 2.1) 清理 ~/.agents/skills 中与当前 skill 集合不一致的旧链接
+# 2.2) 清理 ~/.agents/skills 中与当前 skill 集合不一致的旧链接
 cleanup_stale_links_in_dir "$AGENTS_SKILLS_DIR" "agents" "${skill_names[@]-}"
 
 # 3) 为各个 AI 工具创建软链接（指向 ~/.agents/skills/<skill>）
@@ -335,48 +391,52 @@ for tool_dir in "${skill_links[@]}"; do
         mkdir -p "$tool_dir"
     fi
     tool_name="$(basename "$(dirname "$tool_dir")")"
-    for skill_name in "${skill_names[@]}"; do
-        skill_dir="$AGENTS_SKILLS_DIR/$skill_name"
-        if [[ "$tool_dir" == "$HOME/.claude/skills" ]]; then
-            claude_policy="$(read_claude_publish_policy "$skill_dir")"
-            IFS=$'\x1f' read -r claude_publish claude_install claude_plugin_name claude_install_hint <<< "$claude_policy"
-            if [[ "$claude_publish" != "true" ]]; then
-                echo "⏭️  跳过发布到 Claude Code: $skill_name"
-                if [[ -n "$claude_install" ]]; then
-                    echo "   原因: Claude Code 安装方式为 $claude_install"
+    if [[ "${#skill_names[@]}" -gt 0 ]]; then
+        for skill_name in "${skill_names[@]}"; do
+            skill_dir="$AGENTS_SKILLS_DIR/$skill_name"
+            if [[ "$tool_dir" == "$HOME/.claude/skills" ]]; then
+                claude_policy="$(read_claude_publish_policy "$skill_dir")"
+                IFS=$'\x1f' read -r claude_publish claude_install claude_plugin_name claude_install_hint <<< "$claude_policy"
+                if [[ "$claude_publish" != "true" ]]; then
+                    echo "⏭️  跳过发布到 Claude Code: $skill_name"
+                    if [[ -n "$claude_install" ]]; then
+                        echo "   原因: Claude Code 安装方式为 $claude_install"
+                    fi
+                    if [[ -n "$claude_plugin_name" ]]; then
+                        echo "   插件: $claude_plugin_name"
+                    fi
+                    if [[ -n "$claude_install_hint" ]]; then
+                        echo "   建议命令: $claude_install_hint"
+                    fi
+                    continue
                 fi
-                if [[ -n "$claude_plugin_name" ]]; then
-                    echo "   插件: $claude_plugin_name"
+            else
+                platform_key="$(tool_dir_platform_key "$tool_dir")"
+                publish_flag="$(read_platform_publish_flag "$skill_dir" "$platform_key")"
+                if [[ "$publish_flag" != "true" ]]; then
+                    echo "⏭️  跳过发布到 ${tool_name}: $skill_name"
+                    continue
                 fi
-                if [[ -n "$claude_install_hint" ]]; then
-                    echo "   建议命令: $claude_install_hint"
-                fi
-                continue
             fi
-        else
-            platform_key="$(tool_dir_platform_key "$tool_dir")"
-            publish_flag="$(read_platform_publish_flag "$skill_dir" "$platform_key")"
-            if [[ "$publish_flag" != "true" ]]; then
-                echo "⏭️  跳过发布到 ${tool_name}: $skill_name"
-                continue
-            fi
-        fi
-        safe_link "$skill_dir" "$tool_dir/$skill_name" "$tool_name-$skill_name"
-        published_skill_names+=("$skill_name")
-    done
+            safe_link "$skill_dir" "$tool_dir/$skill_name" "$tool_name-$skill_name"
+            published_skill_names+=("$skill_name")
+        done
+    fi
     cleanup_stale_links_in_dir "$tool_dir" "$tool_name" "${published_skill_names[@]-}"
 done
 
-CLAUDE_PLUGIN_DOC_SCRIPT="$SKILLS_DIR/shared/scripts/generate-claude-plugin-recommendations.sh"
+CLAUDE_PLUGIN_DOC_SCRIPT="$SOURCE_SKILLS_DIR/shared/scripts/generate-claude-plugin-recommendations.sh"
+if [[ ! -x "$CLAUDE_PLUGIN_DOC_SCRIPT" ]]; then
+    CLAUDE_PLUGIN_DOC_SCRIPT="$SKILLS_DIR/shared/scripts/generate-claude-plugin-recommendations.sh"
+fi
 if [[ -x "$CLAUDE_PLUGIN_DOC_SCRIPT" ]]; then
-    SKILLS_DIR="$SKILLS_DIR" bash "$CLAUDE_PLUGIN_DOC_SCRIPT"
+    SKILLS_DIR="$SOURCE_SKILLS_DIR" bash "$CLAUDE_PLUGIN_DOC_SCRIPT"
     echo ""
 fi
 
 echo ""
 echo "✅ 配置完成！"
 echo "🧹 清理过期链接: $CLEANED_STALE_COUNT 个"
-echo "⚠️  跳过重复 skill: $duplicate_count 个"
 echo ""
 echo "📊 验证："
 echo "  ✅ $AGENTS_SKILLS_DIR (目录)"

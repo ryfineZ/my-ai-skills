@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "在需要 Pencil 共改时提供画布协作和结构先行规则。",
+  "trigger_keywords": [
+    "Pencil",
+    "画布共改",
+    "线框图",
+    "结构先行",
+    "视觉协作",
+    "设计验证"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

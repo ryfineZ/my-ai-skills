@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "作为 ui-polish 的运行入口，负责路由平台、文案、反馈与审查链路。",
+  "trigger_keywords": [
+    "ui-polish 入口",
+    "UI 路由",
+    "平台选择",
+    "设计工作流",
+    "UI 协作",
+    "最终审查"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

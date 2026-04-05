@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "补充桌面应用界面的布局、层级和交互规则。",
+  "trigger_keywords": [
+    "桌面应用 UI",
+    "Electron",
+    "Tauri",
+    "工具面板",
+    "桌面布局",
+    "系统风格"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

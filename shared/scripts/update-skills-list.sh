@@ -5,11 +5,33 @@
 
 set -euo pipefail
 
-SKILLS_DIR="${SKILLS_DIR:-$HOME/.agents/skills}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 
-if [[ -f "$SKILLS_DIR/.skillsrc" ]]; then
+find_repo_root() {
+    local current="$1"
+    while [[ "$current" != "/" ]]; do
+        if [[ -d "$current/shared/scripts" ]] && [[ -d "$current/packages" ]]; then
+            printf '%s\n' "$current"
+            return 0
+        fi
+        current="$(dirname "$current")"
+    done
+    return 1
+}
+
+REPO_ROOT="$(find_repo_root "$SCRIPT_DIR" || true)"
+SKILLS_DIR="${SKILLS_DIR:-$HOME/.agents/skills}"
+if [[ -n "${SOURCE_SKILLS_DIR:-}" ]]; then
+    SOURCE_SKILLS_DIR="$SOURCE_SKILLS_DIR"
+elif [[ -n "$REPO_ROOT" ]]; then
+    SOURCE_SKILLS_DIR="$REPO_ROOT"
+else
+    SOURCE_SKILLS_DIR="$SKILLS_DIR"
+fi
+
+if [[ -f "$SOURCE_SKILLS_DIR/.skillsrc" ]]; then
     # shellcheck disable=SC1090
-    source "$SKILLS_DIR/.skillsrc"
+    source "$SOURCE_SKILLS_DIR/.skillsrc"
 fi
 
 if [[ ! -d "$SKILLS_DIR" ]]; then
@@ -17,17 +39,42 @@ if [[ ! -d "$SKILLS_DIR" ]]; then
     exit 1
 fi
 
-REPO_ROOT="$(cd "$SKILLS_DIR" && pwd -P)"
-SKILLS_DOC="$REPO_ROOT/INSTALLED_SKILLS.md"
+if [[ ! -d "$SOURCE_SKILLS_DIR" ]]; then
+    echo "❌ Source Skills 目录不存在: $SOURCE_SKILLS_DIR"
+    exit 1
+fi
+
+RUNTIME_ROOT="$(cd "$SKILLS_DIR" && pwd -P)"
+SOURCE_SKILLS_DIR="$(cd "$SOURCE_SKILLS_DIR" && pwd -P)"
+REPO_ROOT="$SOURCE_SKILLS_DIR"
+SKILLS_DOC="$SOURCE_SKILLS_DIR/INSTALLED_SKILLS.md"
 
 discover_skill_files() {
     local entry=""
+    if [[ -d "$SOURCE_SKILLS_DIR/packages" ]]; then
+        while IFS= read -r entry; do
+            [[ -n "$entry" ]] || continue
+            [[ -f "$entry" ]] || continue
+            printf '%s\n' "$entry"
+        done < <(find "$SOURCE_SKILLS_DIR/packages" -type f -name SKILL.md | sort)
+        return 0
+    fi
+
+    if [[ "$SOURCE_SKILLS_DIR" == "$RUNTIME_ROOT" ]]; then
+        while IFS= read -r entry; do
+            [[ -n "$entry" ]] || continue
+            [[ -e "$entry" ]] || continue
+            [[ -f "$entry/SKILL.md" ]] || continue
+            printf '%s\n' "$entry/SKILL.md"
+        done < <(find "$RUNTIME_ROOT" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+        return 0
+    fi
+
     while IFS= read -r entry; do
         [[ -n "$entry" ]] || continue
-        [[ -e "$entry" ]] || continue
-        [[ -f "$entry/SKILL.md" ]] || continue
-        printf '%s\n' "$entry/SKILL.md"
-    done < <(find "$REPO_ROOT" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort)
+        [[ -f "$entry" ]] || continue
+        printf '%s\n' "$entry"
+    done < <(find "$SOURCE_SKILLS_DIR" -type f -name SKILL.md | sort)
 }
 
 # 临时文件
@@ -35,7 +82,9 @@ SKILLS_DATA=$(mktemp)
 EXISTING_META=$(mktemp)
 
 echo "🔍 正在扫描已安装的 skills..."
-echo "📁 仓库路径: $REPO_ROOT"
+echo "📁 运行时路径: $RUNTIME_ROOT"
+echo "🧭 Source Skills 路径: $SOURCE_SKILLS_DIR"
+echo "📝 输出文档: $SKILLS_DOC"
 
 # 读取现有列表中的中文描述与触发关键词（用于保留）
 

@@ -1,98 +1,184 @@
 # Skills 中央仓库改造设计
 
-> 状态：持续实施中  
-> 最后更新：2026-03-28
+> 状态：设计确认，待分阶段实施  
+> 最后更新：2026-04-03
 
 ## 设计目标
 
-将中央仓库收敛成：
+本次改造的目标不是继续强化“单目录扁平中央仓库”，而是把 skills 系统拆成三个职责清晰的层：
 
-- 单一权威目录
-- 扁平化安装结果
-- 统一来源元数据
-- 多平台差异化发布
-- 可追踪的架构文档体系
+1. 源码管理层：保留技能包原样，便于维护、阅读和发布
+2. 运行时消费层：统一扁平目录，兼容各客户端
+3. 客户端入口层：继续沿用各客户端已有的 skills 目录约定
 
-## 当前状态与目标状态
+在这个过程中，保持以下约束不变：
 
-### 当前状态
+- skill 本身的名字保持原样
+- 不引入 `export_name`
+- 不引入 alias
+- 不新增额外命名规则
+- `.skill-source.json` 继续作为来源真相
 
-当前中央仓库使用了以下模型：
+## 设计背景
 
-- [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 作为权威目录和发布根
-- `install-skill` 已支持 bundle 安装与 `.skill-source.json` 写入
-- `update-skill` 已支持按 `update_group` 聚合更新
-- 平台发布链路已开始读取 `platform_policies.claude_code`
-- `superpowers` 已通过新框架重装为顶层真实目录，并对 Claude Code 执行插件排除发布
+旧模型把 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 同时当作：
 
-这个模型已能运行，但存在这些问题：
+- Git 源码仓库
+- 第三方 bundle 扁平化落地点
+- 客户端消费根
 
-- 历史 skill 的 `.skill-source.json` 覆盖仍不完整
-- `update-skill` 还未覆盖 bundle 增删等完整场景
-- `install-skill` 的安全预审应以“临时本地副本扫描”为主，不再把 GitHub API 远程扫描作为主路径
+这会带来三个问题：
 
-### 目标状态
+1. bundle 被强制扁平化后，源码层真实结构丢失
+2. 文档、脚本、基础 skills 与其他 skills 混在一层，可读性差
+3. `Codex` 与 `Claude Code` 的 skills 发现逻辑不同，继续共用一个“源码即消费”的目录会越来越难维护
 
-目标模型如下：
+其中最关键的现实约束已经确认：
 
-1. [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 仍为唯一权威目录和唯一发布根。
-2. 每个顶层 skill 都是完整真实目录。
-3. 不长期保留第三方源码缓存目录。
-4. `.skill-source.json` 成为唯一来源真相。
-5. 所有平台发布逻辑都基于顶层 skill + `.skill-source.json`。
-6. Claude Code 对插件推荐包采取排除发布策略。
-7. 旧版 `superpowers` 不做原位迁移，改为在新框架完成后删除并重新安装验收。
+- `Codex` 可以从 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 递归发现 `SKILL.md`
+- `Claude Code` 的普通 `/skills/` 目录只支持一层 `skill-name/SKILL.md`
 
-## 目录职责
+因此，新的设计不再让客户端直接消费源码层。
 
-### 中央仓库
+## 三层模型
 
-[`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 负责：
+### 1. 源码管理层
 
-- 存放所有最终可消费的 skill
-- 存放来源元数据
-- 存放文档、脚本、验证工具
-- 作为 Git 同步对象
+源码管理层固定为：
 
-### 平台目录
+- [`~/Workspace/skills-central`](/Users/zhangyufan/Workspace/skills-central)
 
-平台目录只负责消费中央仓库发布结果：
+这是新的真实 Git 仓库，负责：
 
-- `~/.codex/skills`
+- 保存所有 skill 的真实目录
+- 保留 bundle 原样结构
+- 保存文档、脚本、基础 skills
+- 保存 `.skill-source.json`
+- 作为安装、创建、更新、卸载的真实操作对象
+
+源码层不直接暴露给客户端消费。
+
+### 2. 运行时消费层
+
+运行时消费层固定为：
+
+- [`~/.agents/skills`](/Users/zhangyufan/.agents/skills)
+
+它是一个独立目录，不是源码仓库软链接。
+
+它负责：
+
+- 为所有客户端提供统一扁平 skill 根目录
+- 每个顶层条目都指向源码层中的真实 skill 目录
+- 屏蔽源码层中的 bundle / 文档 / 脚本分层差异
+
+运行时层中的条目形式如下：
+
+```text
+~/.agents/skills/create-skill -> ~/Workspace/skills-central/packages/core/create-skill
+~/.agents/skills/brainstorming -> ~/Workspace/skills-central/packages/community/obra__superpowers/brainstorming
+```
+
+### 3. 客户端入口层
+
+客户端入口层继续使用各自的约定目录，例如：
+
 - `~/.claude/skills`
+- `~/.codex/skills`
 - `~/.cursor/skills`
 - `~/.gemini/skills`
-- 其他平台目录
 
-平台目录不承担来源管理职责。
+它们只负责消费 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills)：
 
-## Skill 安装形态
+```text
+~/.claude/skills/create-skill -> ~/.agents/skills/create-skill
+~/.codex/skills/create-skill -> ~/.agents/skills/create-skill
+```
 
-### 自定义 skill
+客户端入口层不再理解源码层结构。
 
-自定义 skill 直接以顶层真实目录存在，例如：
+## 源码仓库目录设计
 
-- [`~/.agents/skills/create-skill`](/Users/zhangyufan/.agents/skills/create-skill)
+源码仓库采用下面的职责分层：
 
-### 第三方 skill
+```text
+~/Workspace/skills-central/
+├── README.md
+├── docs/
+├── scripts/
+├── shared/
+├── packages/
+│   ├── core/
+│   ├── custom/
+│   └── community/
+└── INSTALLED_SKILLS.md
+```
 
-第三方 skill 安装后也落为顶层真实目录，例如：
+其中：
 
-- [`~/.agents/skills/brainstorming`](/Users/zhangyufan/.agents/skills/brainstorming)
+- `docs/`：仓库文档
+- `scripts/`：仓库级脚本
+- `shared/`：共享脚本与公共实现
+- `packages/core/`：基础 skills，例如 `create-skill`、`install-skill`
+- `packages/custom/`：自定义 skills
+- `packages/community/`：第三方仓库或 bundle
 
-要求：
+## 命名与导出规则
 
-- 复制整个 skill 目录
-- 保留 `SKILL.md`
-- 保留 `references/`、`scripts/`、附属 markdown / prompt / shell 文件
+本次设计故意不增加额外命名机制。
 
-不允许只复制 `SKILL.md`。
+### 已确认规则
 
-## 来源元数据模型
+1. 运行时层的目录名继续沿用源码层 skill 目录名
+2. `SKILL.md` 的 `name` 保持原样
+3. 不引入 `export_name`
+4. 不引入 alias
+5. 不增加新的名字映射表
 
-`.skill-source.json` 是唯一来源真相。
+这意味着：
 
-### 推荐字段
+- 一个源码层 skill 目录名，对应一个运行时导出目录名
+- 如果两个不同 skill 最终导出到同名目录，则视为冲突
+
+## 冲突处理设计
+
+### 前置检查
+
+冲突必须优先在这些阶段发现：
+
+- `create-skill`
+- `install-skill`
+- `update-skill`
+
+检查方式是：
+
+- 扫描源码层所有可导出 skill
+- 计算它们在运行时层将占用的目录名
+- 如果即将新增或更新的 skill 会与已有导出名冲突，则直接失败
+
+### 兜底检查
+
+运行时导出阶段仍需保留最终一致性校验：
+
+- 如果源码层被手动修改
+- 如果 Git pull 带来了冲突
+- 如果跳过了标准 skill 管理流程
+
+则导出脚本必须能检测到冲突并拒绝输出不一致结果。
+
+导出阶段不负责改名，也不负责兼容处理。
+
+## 元数据模型
+
+`.skill-source.json` 继续作为来源真相。
+
+这次改造不改变它的基础定位，只调整它所描述的“真实存储结构”和“发布结构”语义：
+
+- skill 的真实目录位于源码层
+- skill 的运行时暴露位于消费层
+- 平台发布仍由 `platform_policies` 控制
+
+推荐字段保持现有模型，不再新增命名相关字段：
 
 ```json
 {
@@ -103,7 +189,7 @@
   "source_ref": "eafe962b18f6c5dc70fb7c8cc7e83e61f4cdde06",
   "bundle_root": "skills",
   "source_path": "skills/brainstorming",
-  "install_mode": "flattened-copy",
+  "install_mode": "package-source-plus-runtime-export",
   "update_group": "obra/superpowers",
   "platform_policies": {
     "codex": {
@@ -119,141 +205,139 @@
       "install_hint": "/plugin install superpowers@superpowers-marketplace"
     }
   },
-  "installed_at": "2026-03-28T08:00:00Z",
-  "updated_at": "2026-03-28T08:00:00Z"
+  "installed_at": "2026-04-03T00:00:00Z",
+  "updated_at": "2026-04-03T00:00:00Z"
 }
 ```
 
-### 设计原则
+## 核心流程设计
 
-1. 任何更新和发布逻辑都优先读取 `.skill-source.json`。
-2. 单 skill 和 bundle 只在元数据层区分，不在仓库结构层区分。
-3. 平台差异通过 `platform_policies` 表达，不通过脚本硬编码例外列表表达。
+### 创建流程
 
-## 安装流程设计
+1. 在源码层目标分组创建 skill
+2. 写入或更新 `.skill-source.json`
+3. 执行运行时导出
+4. 刷新客户端入口层
+5. 更新 `INSTALLED_SKILLS.md`
 
-### 单 skill 仓库
+### 安装流程
 
-1. 拉取远端仓库到临时目录
-2. 识别唯一 skill 目录
-3. 完整复制到中央仓库顶层
-4. 写入 `.skill-source.json`
-5. 发布到各平台
-6. 更新索引与文档
+1. 拉取单 skill 仓库或 bundle 仓库到临时目录
+2. 将结果写入源码层的合适位置
+3. 保留 bundle 原样结构
+4. 为每个 skill 写入 `.skill-source.json`
+5. 检查导出名冲突
+6. 导出到运行时层
+7. 刷新客户端入口层
+8. 更新 `INSTALLED_SKILLS.md`
 
-### bundle 仓库
+### 更新流程
 
-1. 拉取远端仓库到临时目录
-2. 根据仓库结构识别 bundle 根目录
-3. 扫描 bundle 中的所有 skill
-4. 将每个 skill 完整复制到中央仓库顶层
-5. 为每个 skill 写入 `.skill-source.json`
-6. 对平台插件策略进行识别和记录
-7. 发布到各平台
-8. 更新索引与文档
-
-### 为什么采用扁平化复制
-
-不是因为所有客户端都不支持 bundle。  
-主要原因是：
-
-- 中央仓库需要统一来源元数据
-- 需要按 skill 粒度安装、卸载、更新
-- 需要按平台过滤发布
-- Claude Code 需要对部分包进行插件排除
-
-因此扁平化是**管理模型的选择**，不是单纯的运行兼容性补丁。
-
-## 更新流程设计
-
-更新应新增独立入口，由 `update-skill` 驱动。
-
-### 流程
-
-1. 扫描中央仓库顶层 skill
-2. 读取每个 skill 的 `.skill-source.json`
-3. 按 `update_group` 聚合来源
-4. 每个来源仓库只拉取一次
-5. 对应回放更新：
-   - 更新已有 skill
-   - 补装新增 skill
-   - 记录或处理已删除 skill
-6. 重建平台发布结果
+1. 从源码层扫描所有已安装 skill
+2. 基于 `.skill-source.json` 聚合来源
+3. 回放更新到源码层
+4. 检查更新后导出名是否冲突
+5. 重建运行时层
+6. 刷新客户端入口层
 7. 更新 `INSTALLED_SKILLS.md`
-8. 记录变更到 changelog
+
+### 卸载流程
+
+1. 删除源码层中的 skill 或整包
+2. 重建运行时层
+3. 清理客户端入口层
+4. 更新 `INSTALLED_SKILLS.md`
 
 ## 发布流程设计
 
-发布从中央仓库顶层 skill 出发。
+发布拆成两段。
 
-### 规则
+### 第一段：源码层导出到运行时层
 
-1. 默认发布到所有支持 standalone skills 的平台目录。
-2. 发布前读取 `.skill-source.json`。
-3. 若平台策略禁止发布，则跳过并输出提示。
-4. 发布后清理过期链接。
+新增或重构一个“导出脚本”，职责是：
 
-### Claude Code 专项策略
+- 递归扫描 [`~/Workspace/skills-central/packages`](/Users/zhangyufan/Workspace/skills-central/packages)
+- 找到所有真实 `SKILL.md`
+- 为每个 skill 在 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 创建软链
+- 清理失效导出链接
+- 对同名冲突执行硬失败
 
-对于官方建议使用插件安装的 skill 包：
+### 第二段：运行时层同步到客户端入口层
 
-- 不发布到 `~/.claude/skills`
-- 全局安装时，如果本机可用 Claude Code，则自动执行插件市场添加与插件安装 / 启用
-- 同时将插件信息写入文档，便于新设备或缺失环境时补装
+继续保留现有 per-skill 链接发布模型：
 
-这是为了避免 Claude Code 同时看到：
+- 从 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills) 扫描顶层 skill
+- 按平台策略决定是否发布
+- 为各客户端创建或清理入口链接
 
-- 官方插件版 skill
-- 中央仓库 standalone 版同名 skill
+这样可以兼容不同客户端，而不要求它们理解源码层包结构。
 
 ## Claude Code 设计决策
 
-Claude Code 必须视为平台特例。
+`Claude Code` 继续视为平台特例，但特例只发生在“客户端入口层”，不再反向影响源码层结构。
 
 原因：
 
-- 插件能力大于 standalone skills
-- 插件支持 commands、hooks、session start、版本化分发
-- 官方 `superpowers` 已明确推荐 Claude 通过插件安装
+- 普通 `/skills/` 目录只支持一层 `skill-name/SKILL.md`
+- 对部分包还需要插件安装而不是 standalone skill 发布
 
 因此：
 
-- 中央仓库不尝试复刻 Claude 插件能力
-- 中央仓库负责识别、排除、记录，并在可用时直接完成插件安装
-- 若当前机器缺少 Claude 环境，则退化为记录和提示，等待后续补装
+- 源码层允许保留 bundle 原样
+- 运行时层始终导出为扁平目录
+- `Claude Code` 继续从扁平目录消费
+- 对官方建议插件安装的 skill 包，继续执行排除发布
 
-## 文档设计
+## 验证设计
 
-本次改造采用以下文档体系：
+`verify.sh` 在新架构中要覆盖三段检查：
 
-- 需求：[`skills-central-repo-requirements.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skills-central-repo-requirements.md)
-- 设计：[`skills-central-repo-design.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skills-central-repo-design.md)
-- 遗留问题：[`skills-central-repo-open-issues.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skills-central-repo-open-issues.md)
-- 更新记录：[`skills-central-repo-changelog.md`](/Users/zhangyufan/.agents/skills/docs/architecture/skills-central-repo-changelog.md)
+1. 源码层是否存在、是否能发现所有 skill
+2. 运行时层是否完整导出
+3. 客户端入口层是否与运行时层一致
 
-README 只作为入口文档，不承载完整架构设计。
+`doctor-skills` 也应基于这三段模型给出诊断结果。
+
+## 文档与规则联动
+
+本次改造至少涉及这些主文档：
+
+- 需求：[`skills-central-repo-requirements.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skills-central-repo-requirements.md)
+- 设计：[`skills-central-repo-design.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skills-central-repo-design.md)
+- 遗留问题：[`skills-central-repo-open-issues.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skills-central-repo-open-issues.md)
+- 更新记录：[`skills-central-repo-changelog.md`](/Users/zhangyufan/Workspace/skills-central/docs/architecture/skills-central-repo-changelog.md)
+
+另外，这次改造落地后还必须同步更新全局规则文件中关于“中央仓库默认对象”的表述：
+
+- 源码管理仓库改为 [`~/Workspace/skills-central`](/Users/zhangyufan/Workspace/skills-central)
+- 运行时发布目录改为 [`~/.agents/skills`](/Users/zhangyufan/.agents/skills)
 
 ## 实施阶段
 
 ### Phase 1：文档定稿
 
-- 建立架构文档
-- 更新 README 的 Claude Code 注意事项
+- 更新需求与设计文档到三层模型
+- 在 README 中明确 `skills-central` 与运行时层职责
 
-### Phase 2：元数据统一
+### Phase 2：目录迁移
 
-- 扩展 `.skill-source.json`
-- 补齐已有 skill 元数据
+- 建立 `skills-central` 仓库结构
+- 迁移文档、脚本、基础 skills 到新目录
 
-### Phase 3：链路重构
+### Phase 3：导出链路重构
 
+- 实现源码层到运行时层导出
+- 保留运行时层到客户端入口层同步
+
+### Phase 4：skill 管理链路重构
+
+- 改造 `create-skill`
 - 改造 `install-skill`
-- 新增 `update-skill`
-- 改造平台发布脚本
+- 改造 `update-skill`
+- 改造 `uninstall-skill`
 
-### Phase 4：旧版清理与新框架验收
+### Phase 5：验证与规则同步
 
-- 删除旧版 `superpowers`
-- 用新框架重新安装 `superpowers`
-- 淘汰 `THIRD_PARTY_SKILLS.toml`
-- 清理第三方 bundle 缓存依赖
+- 重构 `verify.sh`
+- 适配 `doctor-skills`
+- 同步更新全局规则表述

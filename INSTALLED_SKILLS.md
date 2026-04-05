@@ -3,7 +3,7 @@
 > 本文档由 `shared/scripts/update-skills-list.sh` 自动生成和维护
 > 文件名：`INSTALLED_SKILLS.md` - 避免与各 skill 目录中的 `SKILL.md` 混淆
 > 用途/触发关键词：优先由 AI 自动生成中文（可按需手动补充）
-> 最后更新：2026-04-01 21:41:53
+> 最后更新：2026-04-03 12:41:58
 
 ---
 
@@ -13,7 +13,7 @@
 **用途：** 统一多平台全局规则管理（AGENTS/CLAUDE/GEMINI）
 **触发关键词：** agent-rules-sync、统一多平台全局规则管理、若是讨论性提问、如“要不要写入全局规则？”、则不触发
 
-**位置：** `/Users/zhangyufan/.agents/skills/agent-rules-sync/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/agent-rules-sync/`
 
 ---
 
@@ -21,7 +21,7 @@
 **用途：** 论文/技术文档风格改写，让表达更解释性、更像学术写作
 **触发关键词：** 论文润色、技术文档改写、学术写作、AI检测规避、词汇替换
 
-**位置：** `/Users/zhangyufan/.agents/skills/aigc-v1/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/aigc-v1/`
 
 ---
 
@@ -29,7 +29,7 @@
 **用途：** 通用代码质量检查
 **触发关键词：** code-quality-check、代码质量、通用代码质量检查、提交代码前自动执行
 
-**位置：** `/Users/zhangyufan/.agents/skills/code-quality-check/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/code-quality-check/`
 
 ---
 
@@ -37,7 +37,7 @@
 **用途：** 执行 git commit 创建符合约定式提交规范的提交
 **触发关键词：** commit-conventional、约定式提交、仅当用户明确要求"提交代码、创建提交、不要在仅仅讨论提交、询问提交规范、或解释如何提交时触发
 
-**位置：** `/Users/zhangyufan/.agents/skills/commit-conventional/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/commit-conventional/`
 
 ---
 
@@ -45,7 +45,7 @@
 **用途：** Guide for creating effective skills
 **触发关键词：** create-skill、制作自定义技能等场景
 
-**位置：** `/Users/zhangyufan/.agents/skills/create-skill/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/create-skill/`
 
 ---
 
@@ -53,7 +53,7 @@
 **用途：** 重组优化版中文去AI技能，一次性输出终稿，支持文本与本地文件输入
 **触发关键词：** 去AI痕迹、论文去AI、技术文档去AI、AIGC改写、人性化改写、本地文件去AI
 
-**位置：** `/Users/zhangyufan/.agents/skills/de-ai-zh-optimized/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/de-ai-zh-optimized/`
 
 ---
 
@@ -61,7 +61,7 @@
 **用途：** 保守整合版中文去AI技能，一次性输出终稿，支持文本与本地文件输入
 **触发关键词：** 去AI痕迹、论文去AI、技术文档去AI、AIGC改写、人性化改写、本地文件去AI
 
-**位置：** `/Users/zhangyufan/.agents/skills/de-ai-zh-stable/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/de-ai-zh-stable/`
 
 ---
 
@@ -69,7 +69,7 @@
 **用途：** 诊断中央 skills 仓库状态，并在需要时执行轻量修复。
 **触发关键词：** doctor-skills、仓库诊断、verify.sh、skill-source.json、平台链接、轻量修复
 
-**位置：** `/Users/zhangyufan/.agents/skills/doctor-skills/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/doctor-skills/`
 
 ---
 
@@ -77,15 +77,15 @@
 **用途：** 去除 AI 写作痕迹，使文本更自然有人味
 **触发关键词：** 去除AI痕迹、去AI味、人性化文本、改写AI文章、降低AI检测、AI写作模式
 
-**位置：** `/Users/zhangyufan/.agents/skills/humanizer-zh/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/humanizer-zh/`
 
 ---
 
 ### install-skill
 **用途：** 用于安装和更新 skill、执行 skill 安全审计与风险拦截。
-**触发关键词：** install-skill、安装 skill、更新 skill、GitHub 仓库、安全审计、风险扫描、Prompt Injection、GitHub、agents/skills、project-specific
+**触发关键词：** install-skill、安装 skill、更新 skill、GitHub 仓库、安全审计、风险扫描、Prompt Injection、GitHub、Workspace/skills-cent、agents/skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/install-skill/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/install-skill/`
 
 ---
 
@@ -93,7 +93,7 @@
 **用途：** 对本地或 GitHub 上的 AI skill 执行安装前安全审计，检测提示词劫持、下载执行、凭证窃取、数据外传、持久化与提权风险，并输出...
 **触发关键词：** skill-security-guard、安全审计、提示词劫持、下载执行、凭证窃取、数据外传、持久化、提权风险、风险结论、安装前审计
 
-**位置：** `/Users/zhangyufan/.agents/skills/skill-security-guard/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/skill-security-guard/`
 
 ---
 
@@ -101,7 +101,103 @@
 **用途：** 用于把技术实践、架构改造、工具评测等主题协作写成可发布的公众号草稿，并同步产出 X 线程版。
 **触发关键词：** 技术文章、公众号草稿、X 线程、文章起稿、技术复盘、架构写作、工具评测、协作写稿
 
-**位置：** `/Users/zhangyufan/.agents/skills/tech-article-pipeline/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/tech-article-pipeline/`
+
+---
+
+### ui-assets
+**用途：** 维护 ui-polish 共享参考资料、脚本与模板资产。
+**触发关键词：** UI 资产、共享参考、模板来源、交互预设、风格预设、UI 脚本
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-assets/`
+
+---
+
+### ui-copy
+**用途：** 优化界面文案，去掉 AI 味、自解释和无效标题。
+**触发关键词：** UI 文案、去AI味、按钮文案、标题精简、界面文案优化、使用者视角
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-copy/`
+
+---
+
+### ui-core
+**用途：** 提供 ui-polish 的核心硬规则，约束布局、层级、可读性和反馈。
+**触发关键词：** UI 规则、设计约束、布局克制、可读性、按钮反馈、设计令牌
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-core/`
+
+---
+
+### ui-desktop
+**用途：** 补充桌面应用界面的布局、层级和交互规则。
+**触发关键词：** 桌面应用 UI、Electron、Tauri、工具面板、桌面布局、系统风格
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-desktop/`
+
+---
+
+### ui-ext
+**用途：** 补充浏览器扩展界面的空间利用和交互规则。
+**触发关键词：** 扩展 UI、Chrome 扩展、Popup、Side Panel、紧凑布局、扩展交互
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-ext/`
+
+---
+
+### ui-feedback
+**用途：** 细化按钮、表单和状态切换的交互反馈设计。
+**触发关键词：** 交互反馈、按钮状态、loading、error、empty state、状态矩阵
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-feedback/`
+
+---
+
+### ui-mini
+**用途：** 补充小程序界面的信息密度和平台化设计规则。
+**触发关键词：** 小程序 UI、微信小程序、平台密度、原生感、小程序交互、轻量界面
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-mini/`
+
+---
+
+### ui-mobile
+**用途：** 补充移动端界面的触达范围、信息顺序和触控规则。
+**触发关键词：** 移动端 UI、H5、App 界面、触控交互、小屏阅读、移动布局
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-mobile/`
+
+---
+
+### ui-pencil
+**用途：** 在需要 Pencil 共改时提供画布协作和结构先行规则。
+**触发关键词：** Pencil、画布共改、线框图、结构先行、视觉协作、设计验证
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-pencil/`
+
+---
+
+### ui-polish
+**用途：** 统一提升 Web、H5、小程序、扩展、移动端和桌面应用界面的质感、层级与完成度。
+**触发关键词：** 前端审美、UI 美化、界面优化、小程序 UI、H5 设计、移动端 UI、扩展界面、桌面应用 UI
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-polish/`
+
+---
+
+### ui-review
+**用途：** 对 UI 结果做阻塞项检查和最终视觉审查。
+**触发关键词：** UI 审查、视觉验收、阻塞检查、完成度检查、界面复核、设计走查
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-review/`
+
+---
+
+### ui-web
+**用途：** 补充网页、后台和 SaaS 界面的布局与信息层级规则。
+**触发关键词：** Web UI、后台界面、Dashboard、SaaS、网页布局、信息层级
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/ui-web/`
 
 ---
 
@@ -109,7 +205,7 @@
 **用途：** 删除中央仓库中的已安装 skill，并同步清理平台发布结果与已安装列表。
 **触发关键词：** uninstall-skill、卸载 skill、删除 skill、bundle 清理、平台清理、INSTALLED_SKILLS
 
-**位置：** `/Users/zhangyufan/.agents/skills/uninstall-skill/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/uninstall-skill/`
 
 ---
 
@@ -117,7 +213,15 @@
 **用途：** 按 .skill-source.json 回放来源信息，更新已安装 skill，并支持 bundle 分组更新。
 **触发关键词：** update-skill、更新 skill、bundle 更新、update_group、skill-source.json、已安装 skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/update-skill/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/core/update-skill/`
+
+---
+
+### using-ui-polish
+**用途：** 作为 ui-polish 的运行入口，负责路由平台、文案、反馈与审查链路。
+**触发关键词：** ui-polish 入口、UI 路由、平台选择、设计工作流、UI 协作、最终审查
+
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/custom/using-ui-polish/`
 
 ---
 
@@ -129,7 +233,7 @@
 
 **来源：** vercel-labs/agent-browser
 
-**位置：** `/Users/zhangyufan/.agents/skills/agent-browser/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/vercel-labs__agent-browser/agent-browser/`
 
 ---
 
@@ -139,7 +243,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/brainstorming/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/brainstorming/`
 
 ---
 
@@ -149,7 +253,7 @@
 
 **来源：** pasky/chrome-cdp-skill
 
-**位置：** `/Users/zhangyufan/.agents/skills/chrome-cdp/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/pasky__chrome-cdp-skill/chrome-cdp/`
 
 ---
 
@@ -159,7 +263,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-ad-certificate-abuse/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-ad-certificate-abuse/`
 
 ---
 
@@ -169,7 +273,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-agent-cloud/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-agent-cloud/`
 
 ---
 
@@ -179,7 +283,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-android-hooking/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-android-hooking/`
 
 ---
 
@@ -189,7 +293,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-browser-persistence/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-browser-persistence/`
 
 ---
 
@@ -199,7 +303,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-bundle-sourcemap-recovery/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-bundle-sourcemap-recovery/`
 
 ---
 
@@ -209,7 +313,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-cloud-metadata-path/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-cloud-metadata-path/`
 
 ---
 
@@ -219,7 +323,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-container-runtime/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-container-runtime/`
 
 ---
 
@@ -229,7 +333,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-crypto-mobile/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-crypto-mobile/`
 
 ---
 
@@ -239,7 +343,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-custom-protocol-replay/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-custom-protocol-replay/`
 
 ---
 
@@ -249,7 +353,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-dpapi-credential-chain/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-dpapi-credential-chain/`
 
 ---
 
@@ -259,7 +363,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-file-parser-chain/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-file-parser-chain/`
 
 ---
 
@@ -269,7 +373,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-firmware-layout/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-firmware-layout/`
 
 ---
 
@@ -279,7 +383,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-forensic-timeline/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-forensic-timeline/`
 
 ---
 
@@ -289,7 +393,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-graphql-rpc-drift/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-graphql-rpc-drift/`
 
 ---
 
@@ -299,7 +403,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-identity-windows/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-identity-windows/`
 
 ---
 
@@ -309,7 +413,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-ios-runtime/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-ios-runtime/`
 
 ---
 
@@ -319,7 +423,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-jwt-claim-confusion/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-jwt-claim-confusion/`
 
 ---
 
@@ -329,7 +433,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-k8s-control-plane/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-k8s-control-plane/`
 
 ---
 
@@ -339,7 +443,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-kerberos-delegation/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-kerberos-delegation/`
 
 ---
 
@@ -349,7 +453,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-kernel-container-escape/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-kernel-container-escape/`
 
 ---
 
@@ -359,7 +463,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-linux-credential-pivot/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-linux-credential-pivot/`
 
 ---
 
@@ -369,7 +473,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-lsass-ticket-material/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-lsass-ticket-material/`
 
 ---
 
@@ -379,7 +483,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-mailbox-abuse/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-mailbox-abuse/`
 
 ---
 
@@ -389,7 +493,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-malware-config/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-malware-config/`
 
 ---
 
@@ -399,7 +503,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-oauth-oidc-chain/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-oauth-oidc-chain/`
 
 ---
 
@@ -409,7 +513,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-pcap-protocol/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-pcap-protocol/`
 
 ---
 
@@ -419,7 +523,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-prompt-injection/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-prompt-injection/`
 
 ---
 
@@ -429,7 +533,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-queue-worker-drift/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-queue-worker-drift/`
 
 ---
 
@@ -439,7 +543,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-race-condition-state-drift/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-race-condition-state-drift/`
 
 ---
 
@@ -449,7 +553,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-relay-coercion-chain/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-relay-coercion-chain/`
 
 ---
 
@@ -459,7 +563,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-request-normalization-smuggling/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-request-normalization-smuggling/`
 
 ---
 
@@ -469,7 +573,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-reverse-pwn/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-reverse-pwn/`
 
 ---
 
@@ -479,7 +583,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-runtime-routing/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-runtime-routing/`
 
 ---
 
@@ -489,7 +593,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-ssrf-metadata-pivot/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-ssrf-metadata-pivot/`
 
 ---
 
@@ -499,7 +603,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-stego-media/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-stego-media/`
 
 ---
 
@@ -509,7 +613,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-supply-chain/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-supply-chain/`
 
 ---
 
@@ -519,7 +623,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-template-render-path/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-template-render-path/`
 
 ---
 
@@ -529,7 +633,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-web-runtime/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-web-runtime/`
 
 ---
 
@@ -539,7 +643,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-websocket-runtime/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-websocket-runtime/`
 
 ---
 
@@ -549,7 +653,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/competition-windows-pivot/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/competition-windows-pivot/`
 
 ---
 
@@ -559,7 +663,7 @@
 
 **来源：** https://github.com/GALIAIS/CTF-Sandbox-Orchestrator (bundle: CTF-Sandbox-Orchestrator)
 
-**位置：** `/Users/zhangyufan/.agents/skills/ctf-sandbox-orchestrator/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/GALIAIS__CTF-Sandbox-Orchestrator/ctf-sandbox-orchestrator/`
 
 ---
 
@@ -569,7 +673,7 @@
 
 **来源：** sanjay3290/ai-skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/deep-research/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/sanjay3290__ai-skills/skills/deep-research/`
 
 ---
 
@@ -579,7 +683,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/dispatching-parallel-agents/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/dispatching-parallel-agents/`
 
 ---
 
@@ -589,7 +693,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/executing-plans/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/executing-plans/`
 
 ---
 
@@ -599,7 +703,7 @@
 
 **来源：** vercel-labs/skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/find-skills/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/vercel-labs__skills/find-skills/`
 
 ---
 
@@ -609,7 +713,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/finishing-a-development-branch/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/finishing-a-development-branch/`
 
 ---
 
@@ -619,7 +723,7 @@
 
 **来源：** anthropics/skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/frontend-design/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/anthropics__skills/frontend-design/`
 
 ---
 
@@ -629,7 +733,7 @@
 
 **来源：** openai/skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/gh-address-comments/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/openai__skills/skills/gh-address-comments/`
 
 ---
 
@@ -639,7 +743,7 @@
 
 **来源：** OthmanAdi/planning-with-files
 
-**位置：** `/Users/zhangyufan/.agents/skills/planning-with-files/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/OthmanAdi__planning-with-files/planning-with-files/`
 
 ---
 
@@ -649,7 +753,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/receiving-code-review/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/receiving-code-review/`
 
 ---
 
@@ -659,17 +763,17 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/requesting-code-review/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/requesting-code-review/`
 
 ---
 
 ### seo-audit
-**用途：** 用于执行 skill 安全审计与风险拦截、审计网站 SEO 与页面优化问题。
-**触发关键词：** seo-audit、安全审计、风险扫描、Prompt Injection、SEO 审计、站内优化、Meta 标签、SEO、on-page、programmatic-seo
+**用途：** 用于诊断中央 skills 仓库状态并执行轻量修复、执行 skill 安全审计与风险拦截。
+**触发关键词：** seo-audit、仓库诊断、verify.sh、轻量修复、安全审计、风险扫描、Prompt Injection、SEO 审计、站内优化、Meta 标签
 
 **来源：** coreyhaines31/marketingskills
 
-**位置：** `/Users/zhangyufan/.agents/skills/seo-audit/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/coreyhaines31__marketingskills/seo-audit/`
 
 ---
 
@@ -679,7 +783,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/subagent-driven-development/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/subagent-driven-development/`
 
 ---
 
@@ -689,7 +793,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/systematic-debugging/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/systematic-debugging/`
 
 ---
 
@@ -699,17 +803,17 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/test-driven-development/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/test-driven-development/`
 
 ---
 
 ### ui-ux-pro-max
-**用途：** 用于设计与审查高质量 Web/移动端 UI/UX，并快速落地设计系统。
-**触发关键词：** UI设计、UX审查、设计系统、组件规范、可访问性、响应式布局、React、Next.js
+**用途：** 用于设计和审查前端界面与交互体验。
+**触发关键词：** ui-ux-pro-max、前端设计、UI、UX、组件、UI/UX、React、Next.js、Vue、Svelte
 
 **来源：** https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git
 
-**位置：** `/Users/zhangyufan/.agents/skills/ui-ux-pro-max/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/nextlevelbuilder__ui-ux-pro-max-skill/ui-ux-pro-max/`
 
 ---
 
@@ -719,7 +823,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/using-git-worktrees/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/using-git-worktrees/`
 
 ---
 
@@ -729,7 +833,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/using-superpowers/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/using-superpowers/`
 
 ---
 
@@ -739,7 +843,7 @@
 
 **来源：** vercel-labs/agent-skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/vercel-react-best-practices/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/vercel-labs__agent-skills/vercel-react-best-practices/`
 
 ---
 
@@ -749,7 +853,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/verification-before-completion/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/verification-before-completion/`
 
 ---
 
@@ -759,7 +863,7 @@
 
 **来源：** vercel-labs/agent-skills
 
-**位置：** `/Users/zhangyufan/.agents/skills/web-design-guidelines/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/vercel-labs__agent-skills/web-design-guidelines/`
 
 ---
 
@@ -769,7 +873,7 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/writing-plans/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/writing-plans/`
 
 ---
 
@@ -779,14 +883,14 @@
 
 **来源：** https://github.com/obra/superpowers.git (bundle: superpowers)
 
-**位置：** `/Users/zhangyufan/.agents/skills/writing-skills/`
+**位置：** `/Users/zhangyufan/Workspace/skills-central/packages/community/obra__superpowers/skills/writing-skills/`
 
 ---
 
 ## 📊 统计信息
 
-- **总计：** 80 个 skills
-- **自己创建：** 14 个
+- **总计：** 93 个 skills
+- **自己创建：** 27 个
 - **社区安装：** 66 个
 
 ---
@@ -795,7 +899,7 @@
 
 ```bash
 # 手动更新
-SKILLS_DIR=/Users/zhangyufan/.agents/skills bash /Users/zhangyufan/.agents/skills/shared/scripts/update-skills-list.sh
+SKILLS_DIR=/Users/zhangyufan/Workspace/skills-central bash /Users/zhangyufan/Workspace/skills-central/shared/scripts/update-skills-list.sh
 
 # 自动更新时机
 # 1. 创建新 skill 后

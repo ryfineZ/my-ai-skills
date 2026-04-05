@@ -1,0 +1,20 @@
+{
+  "source": "custom",
+  "source_type": "custom",
+  "created_by": "codex",
+  "created_at": "2026-04-03T04:39:26Z",
+  "updated_at": "2026-04-03T04:39:26Z",
+  "usage_zh": "提供 ui-polish 的核心硬规则，约束布局、层级、可读性和反馈。",
+  "trigger_keywords": [
+    "UI 规则",
+    "设计约束",
+    "布局克制",
+    "可读性",
+    "按钮反馈",
+    "设计令牌"
+  ],
+  "meta_generated_by": "codex",
+  "meta_generation": "current_ai",
+  "meta_language": "zh-CN",
+  "meta_updated_at": "2026-04-03T04:39:26Z"
+}

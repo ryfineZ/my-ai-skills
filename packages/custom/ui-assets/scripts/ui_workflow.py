@@ -207,8 +207,16 @@ def build_reference_command(args: argparse.Namespace, style_value: str) -> str |
     return " ".join(shlex.quote(part) for part in cmd)
 
 
-def build_review_commands(args: argparse.Namespace) -> list[str]:
+def build_review_commands(
+    args: argparse.Namespace,
+    *,
+    style_preset: dict | None,
+    interaction_presets: list[dict],
+) -> list[str]:
     commands: list[str] = []
+    requires_visual_review = bool(style_preset and style_preset.get("requires_visual_review")) or any(
+        preset.get("requires_visual_review") for preset in interaction_presets
+    )
     if args.code_path:
         commands.append(
             "python3 ~/.agents/skills/ui-assets/scripts/check_ui_rules.py "
@@ -222,24 +230,38 @@ def build_review_commands(args: argparse.Namespace) -> list[str]:
             "python3 ~/.agents/skills/ui-assets/scripts/inspect_runtime.py --file "
             + shlex.quote(args.html)
         )
-        commands.append(
-            "python3 ~/.agents/skills/ui-polish/scripts/capture_ui.py --file "
-            + shlex.quote(args.html)
-            + " --out /tmp/ui-shot.png"
-        )
+        if requires_visual_review:
+            commands.append(
+                "python3 ~/.agents/skills/ui-polish/scripts/capture_ui.py --file "
+                + shlex.quote(args.html)
+                + " --out /tmp/ui-shot.png"
+            )
+            commands.append(
+                "python3 ~/.agents/skills/ui-assets/scripts/inspect_runtime.py --file "
+                + shlex.quote(args.html)
+                + " --visual-reviewed"
+            )
     elif args.url:
         commands.append(
             "python3 ~/.agents/skills/ui-assets/scripts/inspect_runtime.py --url "
             + shlex.quote(args.url)
         )
-        commands.append(
-            "python3 ~/.agents/skills/ui-polish/scripts/capture_ui.py --url "
-            + shlex.quote(args.url)
-            + " --out /tmp/ui-shot.png"
-        )
+        if requires_visual_review:
+            commands.append(
+                "python3 ~/.agents/skills/ui-polish/scripts/capture_ui.py --url "
+                + shlex.quote(args.url)
+                + " --out /tmp/ui-shot.png"
+            )
+            commands.append(
+                "python3 ~/.agents/skills/ui-assets/scripts/inspect_runtime.py --url "
+                + shlex.quote(args.url)
+                + " --visual-reviewed"
+            )
     else:
         commands.append("python3 ~/.agents/skills/ui-assets/scripts/inspect_runtime.py --file <html-file>")
-        commands.append("python3 ~/.agents/skills/ui-polish/scripts/capture_ui.py --file <html-file> --out /tmp/ui-shot.png")
+        if requires_visual_review:
+            commands.append("python3 ~/.agents/skills/ui-polish/scripts/capture_ui.py --file <html-file> --out /tmp/ui-shot.png")
+            commands.append("python3 ~/.agents/skills/ui-assets/scripts/inspect_runtime.py --file <html-file> --visual-reviewed")
     return commands
 
 
@@ -277,7 +299,11 @@ def main() -> int:
         needs_feedback=needs_feedback,
     )
     reference_command = build_reference_command(args, style_key if style_preset else requested_style)
-    review_commands = build_review_commands(args)
+    review_commands = build_review_commands(
+        args,
+        style_preset=style_preset,
+        interaction_presets=interaction_presets,
+    )
     brief_constraints = [args.constraints]
     if style_preset:
         brief_constraints.extend(style_preset.get("hidden_constraints", []))
@@ -352,12 +378,17 @@ def main() -> int:
         lines.append("- 自动带出的隐藏约束:")
         for item in style_preset.get("hidden_constraints", []):
             lines.append(f"  - {item}")
+        if style_preset.get("requires_visual_review"):
+            lines.append("- 风险提示:")
+            lines.append("  - 该风格命中强制视觉复审，不能只靠静态检查签收。")
     if interaction_presets:
         if not style_preset:
             lines.append("- 自动带出的隐藏约束:")
         for preset in interaction_presets:
             for item in preset.get("hidden_constraints", []):
                 lines.append(f"  - {item}")
+            if preset.get("requires_visual_review"):
+                lines.append("  - 该交互命中强制视觉复审，必须看真实效果。")
     review_focus: list[str] = []
     if style_preset and style_preset.get("review_focus"):
         review_focus.extend(style_preset["review_focus"])

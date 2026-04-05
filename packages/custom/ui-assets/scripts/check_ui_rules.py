@@ -45,6 +45,14 @@ COPY_BAD_RE = re.compile(
     r"(在这里你可以|用于|帮助你更好|智能|高效|一站式|全方位|AI 驱动|提示词|当前账号|账号池)",
     re.I,
 )
+EXPLANATORY_COPY_RE = re.compile(
+    r"(what changed|current direction|interaction states|design rule|layout pass|approved sources|"
+    r"material details|sample interface|generated under the new rules|current page|template supply|"
+    r"static beauty is not enough|ready now|fix first|"
+    r"当前方向|交互状态|设计规则|变更内容|布局(调整|检查|阶段)|材质细节|先定这三项|先处理最容易统一的一组|"
+    r"主链路|终端带|关键节点会提亮|高危行会直接抬亮|关键节点会压亮，不会满屏闪)",
+    re.I,
+)
 PALETTE_BAD_RE = re.compile(
     r"((blue|indigo|violet|purple).{0,40}(blue|indigo|violet|purple)|"
     r"(silver|gray|grey|mist|sage|mint|green).{0,40}(silver|gray|grey|mist|sage|mint|green)|"
@@ -123,6 +131,10 @@ def copy_findings(path: Path, lines: list[str]) -> list[Finding]:
         if COPY_BAD_RE.search(line):
             findings.append(
                 Finding("WARN", "copy-smell", path, idx, "文案可能偏自我解释、AI 味或重复命名。")
+            )
+        if EXPLANATORY_COPY_RE.search(line):
+            findings.append(
+                Finding("BLOCK", "explanatory-copy", path, idx, "命中解释型/系统视角文案，需改成面向使用者的任务表达。")
             )
     return findings
 

@@ -148,14 +148,74 @@ except Exception:
     }
 
 issues = list(verify_data.get("issues") or [])
-search_root = source_skills_dir / "packages" if (source_skills_dir / "packages").is_dir() else source_skills_dir
+verify_skills = verify_data.get("skills")
 
-for skill_file in sorted(search_root.rglob("SKILL.md")):
-    if not skill_file.is_file():
-        continue
-    entry = skill_file.parent
-    skill_name = extract_name(skill_file, entry.name)
-    embedded_git_dir = entry / ".git"
+if isinstance(verify_skills, list):
+    skill_entries = []
+    for raw in verify_skills:
+        if not isinstance(raw, dict):
+            continue
+        skill_dir_value = raw.get("skill_dir")
+        if not skill_dir_value:
+            continue
+        entry = Path(skill_dir_value)
+        skill_name = raw.get("name") or entry.name
+        skill_entries.append(
+            {
+                "entry": entry,
+                "name": skill_name,
+                "meta_file": Path(raw.get("meta_file") or (entry / ".skill-source.json")),
+                "meta_exists": bool(raw.get("meta_exists")),
+                "meta_valid": bool(raw.get("meta_valid", True)),
+                "source": str(raw.get("source") or "").strip(),
+                "source_type": str(raw.get("source_type") or "").strip(),
+                "source_repo": str(raw.get("source_repo") or "").strip(),
+                "update_group": str(raw.get("update_group") or "").strip(),
+                "source_path": str(raw.get("source_path") or "").strip(),
+                "bundle_root": str(raw.get("bundle_root") or "").strip(),
+                "has_embedded_git": bool(raw.get("has_embedded_git")),
+            }
+        )
+else:
+    search_root = source_skills_dir / "packages" if (source_skills_dir / "packages").is_dir() else source_skills_dir
+    skill_entries = []
+    for skill_file in sorted(search_root.rglob("SKILL.md")):
+        if not skill_file.is_file():
+            continue
+        entry = skill_file.parent
+        skill_name = extract_name(skill_file, entry.name)
+        meta_file = entry / ".skill-source.json"
+        meta_exists = meta_file.is_file()
+        data = {}
+        meta_valid = True
+        if meta_exists:
+            try:
+                data = json.loads(meta_file.read_text(encoding="utf-8"))
+            except Exception:
+                data = {}
+                meta_valid = False
+        skill_entries.append(
+            {
+                "entry": entry,
+                "name": skill_name,
+                "meta_file": meta_file,
+                "meta_exists": meta_exists,
+                "meta_valid": meta_valid,
+                "source": str(data.get("source") or "").strip(),
+                "source_type": str(data.get("source_type") or "").strip(),
+                "source_repo": str(data.get("source_repo") or "").strip(),
+                "update_group": str(data.get("update_group") or "").strip(),
+                "source_path": str(data.get("source_path") or "").strip(),
+                "bundle_root": str(data.get("bundle_root") or "").strip(),
+                "has_embedded_git": (entry / ".git").exists(),
+            }
+        )
+
+for skill in skill_entries:
+    entry = skill["entry"]
+    skill_name = skill["name"]
+    meta_file = skill["meta_file"]
+
     if entry.is_symlink():
         issues.append(
             {
@@ -167,9 +227,8 @@ for skill_file in sorted(search_root.rglob("SKILL.md")):
         )
         continue
 
-    meta_file = entry / ".skill-source.json"
-    if not meta_file.is_file():
-        if embedded_git_dir.exists():
+    if not skill["meta_exists"]:
+        if skill["has_embedded_git"]:
             continue
         issues.append(
             {
@@ -181,9 +240,7 @@ for skill_file in sorted(search_root.rglob("SKILL.md")):
         )
         continue
 
-    try:
-        data = json.loads(meta_file.read_text(encoding="utf-8"))
-    except Exception:
+    if not skill["meta_valid"]:
         issues.append(
             {
                 "severity": "error",
@@ -194,12 +251,12 @@ for skill_file in sorted(search_root.rglob("SKILL.md")):
         )
         continue
 
-    source = str(data.get("source") or "").strip()
-    source_type = str(data.get("source_type") or "").strip()
-    source_repo = str(data.get("source_repo") or "").strip()
-    update_group = str(data.get("update_group") or "").strip()
-    source_path = str(data.get("source_path") or "").strip()
-    bundle_root = str(data.get("bundle_root") or "").strip()
+    source = skill["source"]
+    source_type = skill["source_type"]
+    source_repo = skill["source_repo"]
+    update_group = skill["update_group"]
+    source_path = skill["source_path"]
+    bundle_root = skill["bundle_root"]
 
     if source != "custom":
         if not source_type:

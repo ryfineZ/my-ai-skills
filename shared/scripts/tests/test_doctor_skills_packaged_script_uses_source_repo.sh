@@ -16,8 +16,9 @@ cp /Users/zhangyufan/Workspace/skills-central/packages/core/doctor-skills/doctor
 cp /Users/zhangyufan/Workspace/skills-central/shared/scripts/install.sh "$SOURCE_DIR/shared/scripts/install.sh"
 cp /Users/zhangyufan/Workspace/skills-central/shared/scripts/update-skills-list.sh "$SOURCE_DIR/shared/scripts/update-skills-list.sh"
 cp /Users/zhangyufan/Workspace/skills-central/shared/scripts/verify.sh "$SOURCE_DIR/shared/scripts/verify.sh"
+cp /Users/zhangyufan/Workspace/skills-central/shared/scripts/verify_skills.py "$SOURCE_DIR/shared/scripts/verify_skills.py"
 cp /Users/zhangyufan/Workspace/skills-central/shared/scripts/generate-claude-plugin-recommendations.sh "$SOURCE_DIR/shared/scripts/generate-claude-plugin-recommendations.sh"
-chmod +x "$SOURCE_DIR/packages/core/doctor-skills/doctor-skills.sh" "$SOURCE_DIR/shared/scripts/install.sh" "$SOURCE_DIR/shared/scripts/update-skills-list.sh" "$SOURCE_DIR/shared/scripts/verify.sh" "$SOURCE_DIR/shared/scripts/generate-claude-plugin-recommendations.sh"
+chmod +x "$SOURCE_DIR/packages/core/doctor-skills/doctor-skills.sh" "$SOURCE_DIR/shared/scripts/install.sh" "$SOURCE_DIR/shared/scripts/update-skills-list.sh" "$SOURCE_DIR/shared/scripts/verify.sh" "$SOURCE_DIR/shared/scripts/verify_skills.py" "$SOURCE_DIR/shared/scripts/generate-claude-plugin-recommendations.sh"
 
 cat > "$SOURCE_DIR/packages/custom/demo-skill/SKILL.md" <<'EOF'
 ---
